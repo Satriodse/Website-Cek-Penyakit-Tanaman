@@ -1,0 +1,331 @@
+/* Reset Dasar Modern */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif; /* Menggunakan font Poppins yang lebih modern */
+}
+
+/* Palet Warna & Utilitas */
+:root {
+    --fresh-green: #4caf50;
+    --dark-green: #2e7d32;
+    --light-green-bg: #f1f8e9;
+    --pure-white: #ffffff;
+    --blue-btn: #1976d2;
+    --text-dark: #333333;
+    --text-grey: #555555;
+    --border-color: #e0e0e0;
+}
+
+/* Pengaturan Dasar Body & Utilitas */
+body {
+    background-color: var(--pure-white);
+    color: var(--text-dark);
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1200px; /* Lebih lebar untuk desain modern */
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.section-padding {
+    padding: 60px 0;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.card-style {
+    background: var(--pure-white);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+
+.green-btn {
+    background-color: var(--fresh-green);
+    color: var(--pure-white);
+    padding: 12px 24px;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Mengatur ukuran ikon di dalam tombol hijau */
+.green-btn img {
+    width: 24px;
+    height: 24px;
+    object-fit: contain; /* Memastikan gambar tidak gepeng */
+}
+
+.green-btn:hover {
+    background-color: var(--dark-green);
+}
+
+/* Header & Navigasi Transparan Melayang */
+.main-header {
+    background-color: rgba(255, 255, 255, 0.2); /* Warna putih dengan transparansi 85% */
+    backdrop-filter: blur(8px); /* Efek kaca buram (glassmorphism) */
+    border-bottom: 1px solid rgba(224, 224, 224, 0.5);
+    position: fixed; /* Membuat header melayang dan tetap di atas saat di-scroll */
+    width: 100%;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+}
+
+.main-header nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+}
+
+.logo-area {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.logo-area img {
+    height: 40px;
+    width: 40px;
+}
+
+.logo-text {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--fresh-green);
+}
+
+.nav-links {
+    list-style: none;
+    display: flex;
+    gap: 25px;
+}
+
+.nav-links li a {
+    text-decoration: none;
+    color: var(--text-grey);
+    font-weight: 500;
+    transition: color 0.3s;
+    font-size: 14px;
+}
+
+.nav-links li a:hover,
+.nav-links li a.active {
+    color: var(--fresh-green);
+}
+
+.login-btn {
+    background-color: var(--fresh-green);
+    color: var(--pure-white);
+    padding: 10px 20px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: background-color 0.3s;
+    font-size: 14px;
+}
+
+.login-btn:hover {
+    background-color: var(--dark-green);
+}
+
+/* Wadah untuk menyejajarkan tombol Login dan Logout */
+.auth-buttons {
+    display: flex;
+    gap: 10px; /* Memberikan jarak 10px antara kedua tombol */
+    align-items: center;
+}
+
+/* Desain Tombol Logout Merah */
+.logout-btn {
+    background-color: #e53935 !important; /* Paksa warna merah */
+    color: #ffffff !important; /* Paksa teks warna putih */
+    padding: 10px 20px;
+    border-radius: 6px;
+    text-decoration: none !important; /* Hilangkan garis bawah */
+    font-weight: 600;
+    transition: background-color 0.3s;
+    font-size: 14px;
+}
+
+/* Efek saat kursor menyorot tombol Logout */
+.logout-btn:hover {
+    background-color: #c62828; /* Berubah menjadi merah tua */
+}
+
+/* Banner Latar Belakang */
+.hero-section {
+    position: relative;
+    background-image: url('../fotopetani.jpg.jpeg'); 
+    background-size: cover; /* Membuat gambar menyebar memenuhi seluruh area */
+    background-position: center center; /* Memosisikan gambar tepat di tengah */
+    background-repeat: no-repeat;
+    min-height: 100vh; /* Tinggi section setinggi layar monitor penuh */
+    display: flex;
+    align-items: center; 
+    padding-top: 80px; /* Jarak agar teks tidak tertutup header yang melayang */
+}
+
+/* Membuat gradasi bayangan putih dari kiri ke kanan agar teks tetap terbaca */
+.hero-section::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(to right, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.7) 45%, rgba(255,255,255,0) 100%);
+    z-index: 1;
+}
+
+/* Mengatur wadah teks agar berada di atas gradasi */
+.hero-container {
+    position: relative;
+    z-index: 2; /* Memastikan teks berada di atas lapisan background dan gradasi */
+    display: block; 
+    max-width: 650px; /* Membatasi seberapa lebar teks membentang ke kanan */
+    margin-left: 10%; /* Memberi jarak dari tepi kiri layar */
+    padding: 0 20px;
+}
+
+.hero-text h1 {
+    font-size: 36px;
+    font-weight: 800;
+    color: var(--fresh-green);
+    line-height: 1.2;
+    margin-bottom: 15px;
+}
+
+.hero-text p {
+    font-size: 16px;
+    color: var(--text-grey);
+    margin-bottom: 25px;
+}
+
+.hero-visual {
+    display: none;
+}
+
+/* Featured Card */
+.feature-cards {
+    background-color: var(--light-green-bg);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.feature-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Dua kolom grid */
+    gap: 30px;
+    max-width: 750px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+.feature-card {
+    background-color: var(--pure-white);
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    text-align: center;
+}
+
+.icon-group {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.icon-group img {
+    height: 60px;
+    width: 60px;
+}
+
+.feature-card h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 10px;
+}
+
+.feature-card p {
+    font-size: 14px;
+    color: var(--text-grey);
+}
+
+
+/* Footer */
+.main-footer {
+    background-color: var(--pure-white);
+    color: var(--fresh-green);
+    border-top: 1px solid var(--border-color);
+}
+
+@media screen and (max-width: 768px) {
+    
+    /* 1. Menyesuaikan Menu Navigasi (Header) */
+    .main-header nav {
+        flex-direction: column; /* Mengubah susunan menyamping jadi atas-bawah */
+        gap: 15px;
+        padding: 15px 10px;
+    }
+    
+    .nav-links {
+        flex-wrap: wrap; /* Membiarkan menu turun ke baris baru jika sempit */
+        justify-content: center;
+        gap: 15px;
+    }
+
+    /* 2. Menyesuaikan Banner Utama (Hero Section) */
+    .hero-section::before {
+        /* Mengubah gradasi menjadi lapisan putih merata agar teks selalu terbaca di HP */
+        background: rgba(255, 255, 255, 0.85); 
+    }
+
+    .hero-container {
+        margin-left: 0; /* Menghilangkan jarak kosong di kiri */
+        text-align: center; /* Teks menjadi rata tengah */
+        display: flex;
+        flex-direction: column;
+        align-items: center; /* Tombol hijau ikut ke tengah */
+    }
+
+    .hero-text h1 {
+        font-size: 28px; /* Mengecilkan ukuran judul agar tidak memenuhi layar HP */
+    }
+
+    /* 3. Menyesuaikan Kartu Fitur (Dari 2 Kolom menjadi 1 Kolom) */
+    .feature-container {
+        grid-template-columns: 1fr; /* Ubah jadi 1 kolom di HP */
+        gap: 20px;
+        max-width: 100%;
+    }
+    
+    /* 4. Menyesuaikan Jarak (Padding) */
+    .section-padding {
+        padding: 40px 0; /* Mengurangi jarak atas-bawah antar bagian di HP */
+    }
+
+    .auth-buttons {
+        flex-direction: column; 
+        width: 100%;
+        gap: 10px;
+    }
+    
+    .login-btn, .logout-btn {
+        width: 100%; 
+        text-align: center;
+    }
+}
