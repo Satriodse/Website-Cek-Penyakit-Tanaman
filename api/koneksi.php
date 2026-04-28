@@ -1,28 +1,28 @@
 <?php
 $host     = "gateway01.ap-southeast-1.prod.alicloud.tidbcloud.com";
 $port     = 4000;
-$user     = "DLDDRzUzmUhedCS.root";       // Ganti dengan username MySQL Anda
-$password = "5Bh4vn4GMldKXjsP";           // Ganti dengan password MySQL Anda
+$user     = "DLDDRzUzmUhedCS.root";
+$password = "5Bh4vn4GMldKXjsP";
 $database = "cepat";
 
-// Inisialisasi mysqli
+// Inisialisasi koneksi mysqli dengan SSL (diperlukan oleh TiDB Cloud)
 $koneksi = mysqli_init();
 
-$conn = mysqli_connect($host, $port, $user, $password, $database);
-
-// Melakukan koneksi
 $real_connect = mysqli_real_connect(
-    $koneksi, 
-    $host, 
-    $user, 
-    $password, 
-    $database, 
-    $port, 
-    NULL, 
+    $koneksi,
+    $host,
+    $user,
+    $password,
+    $database,
+    $port,
+    NULL,
     MYSQLI_CLIENT_SSL
 );
 
-if (!$conn) {
+if (!$real_connect) {
     die("Koneksi gagal: " . mysqli_connect_error());
 }
+
+// Alias $conn → $koneksi agar semua file yang memakai $conn tetap berjalan
+$conn = $koneksi;
 ?>
