@@ -1,28 +1,43 @@
 <?php
+// ============================================================
+// KONEKSI DATABASE – TiDB Cloud
+// TIDAK menggunakan mysqli_connect() karena port harus int
+// Menggunakan mysqli_real_connect() dengan SSL
+// ============================================================
+
 $host     = "gateway01.ap-southeast-1.prod.alicloud.tidbcloud.com";
-$port = 4000;
-$user     = "39cVeHTYABy9NSP.root";       // Ganti dengan username MySQL Anda
-$password = "ezuOT81rEssH5PF5";           // Ganti dengan password MySQL Anda
+$port     = 4000;                      // integer, BUKAN string
+$user     = "DLDDRzUzmUhedCS.root";
+$password = "5Bh4vn4GMldKXjsP";
 $database = "cepat";
 
-// Inisialisasi mysqli
-$koneksi = mysqli_init();
+// Step 1: Init object mysqli
+$conn = mysqli_init();
+if (!$conn) {
+    die(json_encode(["error" => "mysqli_init() gagal."]));
+}
 
-$conn = mysqli_connect($host, $port, $user, $password, $database);
+// Step 2: Set opsi SSL sebelum connect
+mysqli_ssl_set($conn, NULL, NULL, NULL, NULL, NULL);
 
-// Melakukan koneksi
+// Step 3: Sambungkan dengan real_connect (support port integer + SSL)
 $real_connect = mysqli_real_connect(
-    $koneksi, 
-    $host, 
-    $user, 
-    $password, 
-    $database, 
-    $port, 
-    NULL, 
+    $conn,
+    $host,
+    $user,
+    $password,
+    $database,
+    $port,          // integer ✓
+    NULL,
     MYSQLI_CLIENT_SSL
 );
 
-if (!$conn) {
-    die("Koneksi gagal: " . mysqli_connect_error());
+if (!$real_connect) {
+    die("Koneksi ke TiDB Cloud gagal: " . mysqli_connect_error());
 }
-?>
+
+// Step 4: Set charset
+mysqli_set_charset($conn, "utf8mb4");
+
+// Alias untuk kompatibilitas kode lama yang pakai $koneksi
+$koneksi = $conn;
