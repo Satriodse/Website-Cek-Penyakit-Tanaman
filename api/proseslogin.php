@@ -2,121 +2,56 @@
 session_start();
 require_once 'koneksi.php';
 
-// Enable error reporting untuk debugging
-error_reporting(E_ALL);
-ini_set('display_errors', 0); // Jangan tampilkan error langsung, log saja
-
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-    header("Location: loginpage.php"); 
-    exit();
+    header("Location: loginpage.php"); exit();
 }
 
 $email    = trim($_POST["email"]    ?? '');
 $password = $_POST["password"] ?? '';
-$remember = isset($_POST["remember"]) ? "true" : "";
 
 if (empty($email) || empty($password)) {
-    header("Location: loginpage.php?error=Email+dan+password+harus+diisi!&email=" . urlencode($email) . "&remember=" . urlencode($remember)); 
+    header("Location: loginpage.php?error=Email+dan+password+harus+diisi!");
     exit();
 }
 
-// STEP 1: Cek tabel pengguna
+// ── STEP 1: Cek tabel pengguna (login by email) ────────────
 $stmt = mysqli_prepare($conn, "SELECT id, nama, username, password FROM pengguna WHERE email = ?");
-if (!$stmt) {
-    header("Location: loginpage.php?error=Kesalahan+sistem+(prepare+gagal).&email=" . urlencode($email) . "&remember=" . urlencode($remember));
-    exit();
-}
 mysqli_stmt_bind_param($stmt, "s", $email);
 mysqli_stmt_execute($stmt);
-$result   = mysqli_stmt_get_result($stmt);
+$result = mysqli_stmt_get_result($stmt);
 $pengguna = mysqli_fetch_assoc($result);
 mysqli_stmt_close($stmt);
 
 if ($pengguna && password_verify($password, $pengguna["password"])) {
+    // ── Login sebagai PENGGUNA berhasil ──────────────────
     $_SESSION["id"]       = $pengguna["id"];
     $_SESSION["nama"]     = $pengguna["nama"];
     $_SESSION["username"] = $pengguna["username"];
-    $_SESSION["user_type"] = "pengguna";
-    
-    // Catat di tabel session_logs (non-blocking - jangan sampai gagal login)
-    @recordSessionLog($conn, $pengguna["id"], "pengguna", $_SERVER['REMOTE_ADDR'], "login", "success");
-    
-    // Remember me functionality
-    if ($remember) {
-        setcookie("remember_email", $email, time() + (30 * 24 * 60 * 60), "/");
-    }
-    
+
     header("Location: tugasweb.php");
     exit();
 }
 
-// STEP 2: Cek tabel admin
+// ── STEP 2: Cek tabel admin (login by email) ───────────────
 $stmt2 = mysqli_prepare($conn, "SELECT id, nama, username, password, role FROM admin WHERE email = ? AND is_active = 1");
-if (!$stmt2) {
-    header("Location: loginpage.php?error=Kesalahan+sistem+(prepare+gagal).&email=" . urlencode($email) . "&remember=" . urlencode($remember));
-    exit();
-}
 mysqli_stmt_bind_param($stmt2, "s", $email);
 mysqli_stmt_execute($stmt2);
 $result2 = mysqli_stmt_get_result($stmt2);
-$admin   = mysqli_fetch_assoc($result2);
+$admin = mysqli_fetch_assoc($result2);
 mysqli_stmt_close($stmt2);
 
 if ($admin && password_verify($password, $admin["password"])) {
+    // ── Login sebagai ADMIN berhasil ─────────────────────
     $_SESSION["admin_id"]       = $admin["id"];
     $_SESSION["admin_nama"]     = $admin["nama"];
     $_SESSION["admin_username"] = $admin["username"];
     $_SESSION["admin_role"]     = $admin["role"];
-    $_SESSION["user_type"]      = "admin";
-    
-    // Catat di tabel session_logs (non-blocking - jangan sampai gagal login)
-    @recordSessionLog($conn, $admin["id"], "admin", $_SERVER['REMOTE_ADDR'], "login", "success");
-    
-    // Remember me functionality
-    if ($remember) {
-        setcookie("remember_email", $email, time() + (30 * 24 * 60 * 60), "/");
-    }
-    
+
     header("Location: admindashboard.php");
     exit();
 }
 
-// Login gagal - catat attempted login (non-blocking)
-@recordSessionLog($conn, null, null, $_SERVER['REMOTE_ADDR'], "login", "failed", $email);
-
-header("Location: loginpage.php?error=Email+atau+password+salah!&email=" . urlencode($email) . "&remember=" . urlencode($remember));
+// ── Tidak cocok di keduanya ────────────────────────────────
+header("Location: loginpage.php?error=Email+atau+password+salah!");
 exit();
-
-/**
- * Fungsi untuk mencatat session login
- * Dirancang untuk TIDAK menghentikan proses login jika tabel belum ada
- */
-function recordSessionLog($conn, $user_id, $user_type, $ip_address, $action, $status, $attempted_email = null) {
-    try {
-        // Cek apakah tabel session_logs ada
-        $check_table = mysqli_query($conn, "SHOW TABLES LIKE 'session_logs'");
-        if (!$check_table || mysqli_num_rows($check_table) == 0) {
-            // Tabel tidak ada, skip logging tapi jangan error
-            return true;
-        }
-        
-        $query = "INSERT INTO session_logs (user_id, user_type, ip_address, action, status, attempted_email, login_time, last_activity) 
-                  VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())";
-        
-        $stmt = mysqli_prepare($conn, $query);
-        if ($stmt) {
-            // Bind parameters dengan type yang benar
-            // i = integer, s = string
-            $bind_types = "isssss";
-            mysqli_stmt_bind_param($stmt, $bind_types, $user_id, $user_type, $ip_address, $action, $status, $attempted_email);
-            $result = mysqli_stmt_execute($stmt);
-            mysqli_stmt_close($stmt);
-            return $result;
-        }
-        return false;
-    } catch (Exception $e) {
-        // Suppress error - jangan sampai mengganggu login
-        return false;
-    }
-}
 ?>
