@@ -7,8 +7,8 @@
 
 $host     = "gateway01.ap-southeast-1.prod.alicloud.tidbcloud.com";
 $port     = 4000;                      // integer, BUKAN string
-$user     = "DLDDRzUzmUhedCS.root";
-$password = "5Bh4vn4GMldKXjsP";
+$user     = "39cVeHTYABy9NSP.root";
+$password = "wO782LVSJvOSjtoB";
 $database = "cepat";
 
 // Step 1: Init object mysqli
