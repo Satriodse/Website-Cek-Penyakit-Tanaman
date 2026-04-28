@@ -2,6 +2,10 @@
 session_start();
 require_once 'koneksi.php';
 
+// Enable error reporting untuk debugging
+error_reporting(E_ALL);
+ini_set('display_errors', 0); // Jangan tampilkan error langsung, log saja
+
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
     header("Location: loginpage.php"); 
     exit();
@@ -34,8 +38,8 @@ if ($pengguna && password_verify($password, $pengguna["password"])) {
     $_SESSION["username"] = $pengguna["username"];
     $_SESSION["user_type"] = "pengguna";
     
-    // Catat di tabel session_logs
-    recordSessionLog($conn, $pengguna["id"], "pengguna", $_SERVER['REMOTE_ADDR'], "login", "success");
+    // Catat di tabel session_logs (non-blocking - jangan sampai gagal login)
+    @recordSessionLog($conn, $pengguna["id"], "pengguna", $_SERVER['REMOTE_ADDR'], "login", "success");
     
     // Remember me functionality
     if ($remember) {
@@ -65,8 +69,8 @@ if ($admin && password_verify($password, $admin["password"])) {
     $_SESSION["admin_role"]     = $admin["role"];
     $_SESSION["user_type"]      = "admin";
     
-    // Catat di tabel session_logs
-    recordSessionLog($conn, $admin["id"], "admin", $_SERVER['REMOTE_ADDR'], "login", "success");
+    // Catat di tabel session_logs (non-blocking - jangan sampai gagal login)
+    @recordSessionLog($conn, $admin["id"], "admin", $_SERVER['REMOTE_ADDR'], "login", "success");
     
     // Remember me functionality
     if ($remember) {
@@ -77,31 +81,42 @@ if ($admin && password_verify($password, $admin["password"])) {
     exit();
 }
 
-// Login gagal - catat attempted login
-recordSessionLog($conn, null, null, $_SERVER['REMOTE_ADDR'], "login", "failed", $email);
+// Login gagal - catat attempted login (non-blocking)
+@recordSessionLog($conn, null, null, $_SERVER['REMOTE_ADDR'], "login", "failed", $email);
 
 header("Location: loginpage.php?error=Email+atau+password+salah!&email=" . urlencode($email) . "&remember=" . urlencode($remember));
 exit();
 
 /**
  * Fungsi untuk mencatat session login
+ * Dirancang untuk TIDAK menghentikan proses login jika tabel belum ada
  */
 function recordSessionLog($conn, $user_id, $user_type, $ip_address, $action, $status, $attempted_email = null) {
-    // Cek apakah tabel session_logs ada
-    $check_table = mysqli_query($conn, "SHOW TABLES LIKE 'session_logs'");
-    if (mysqli_num_rows($check_table) == 0) {
-        // Tabel tidak ada, skip logging
-        return;
-    }
-    
-    $query = "INSERT INTO session_logs (user_id, user_type, ip_address, action, status, attempted_email, login_time, last_activity) 
-              VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())";
-    
-    $stmt = mysqli_prepare($conn, $query);
-    if ($stmt) {
-        mysqli_stmt_bind_param($stmt, "isssss", $user_id, $user_type, $ip_address, $action, $status, $attempted_email);
-        mysqli_stmt_execute($stmt);
-        mysqli_stmt_close($stmt);
+    try {
+        // Cek apakah tabel session_logs ada
+        $check_table = mysqli_query($conn, "SHOW TABLES LIKE 'session_logs'");
+        if (!$check_table || mysqli_num_rows($check_table) == 0) {
+            // Tabel tidak ada, skip logging tapi jangan error
+            return true;
+        }
+        
+        $query = "INSERT INTO session_logs (user_id, user_type, ip_address, action, status, attempted_email, login_time, last_activity) 
+                  VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())";
+        
+        $stmt = mysqli_prepare($conn, $query);
+        if ($stmt) {
+            // Bind parameters dengan type yang benar
+            // i = integer, s = string
+            $bind_types = "isssss";
+            mysqli_stmt_bind_param($stmt, $bind_types, $user_id, $user_type, $ip_address, $action, $status, $attempted_email);
+            $result = mysqli_stmt_execute($stmt);
+            mysqli_stmt_close($stmt);
+            return $result;
+        }
+        return false;
+    } catch (Exception $e) {
+        // Suppress error - jangan sampai mengganggu login
+        return false;
     }
 }
 ?>
