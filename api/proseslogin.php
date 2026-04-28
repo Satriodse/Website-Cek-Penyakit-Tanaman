@@ -87,6 +87,13 @@ exit();
  * Fungsi untuk mencatat session login
  */
 function recordSessionLog($conn, $user_id, $user_type, $ip_address, $action, $status, $attempted_email = null) {
+    // Cek apakah tabel session_logs ada
+    $check_table = mysqli_query($conn, "SHOW TABLES LIKE 'session_logs'");
+    if (mysqli_num_rows($check_table) == 0) {
+        // Tabel tidak ada, skip logging
+        return;
+    }
+    
     $query = "INSERT INTO session_logs (user_id, user_type, ip_address, action, status, attempted_email, login_time, last_activity) 
               VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())";
     
