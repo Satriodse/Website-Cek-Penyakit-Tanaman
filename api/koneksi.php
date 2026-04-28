@@ -1,8 +1,8 @@
 <?php
 $host     = "gateway01.ap-southeast-1.prod.alicloud.tidbcloud.com";
 $port = 4000;
-$user     = "DLDDRzUzmUhedCS.root";       // Ganti dengan username MySQL Anda
-$password = "5Bh4vn4GMldKXjsP";           // Ganti dengan password MySQL Anda
+$user     = "39cVeHTYABy9NSP.root";       // Ganti dengan username MySQL Anda
+$password = "ezuOT81rEssH5PF5";           // Ganti dengan password MySQL Anda
 $database = "cepat";
 
 // Inisialisasi mysqli
