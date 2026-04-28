@@ -205,7 +205,7 @@ if (isset($_SESSION["admin_nama"]))
     <form action="proseslogin.php" method="POST">
         <div class="fgroup">
             <label class="flabel">Email Address</label>
-            <input type="email" class="finput" name="email" placeholder="Masukkan email Anda" required autofocus>
+            <input type="email" class="finput" name="email" placeholder="Masukkan email Anda" value="<?= isset($_GET['email']) ? htmlspecialchars($_GET['email']) : '' ?>" required autofocus>
         </div>
         
         <div class="fgroup">
@@ -215,7 +215,7 @@ if (isset($_SESSION["admin_nama"]))
 
         <div class="options-row">
             <label class="checkbox-label">
-                <input type="checkbox" name="remember"> Ingat Saya
+                <input type="checkbox" name="remember" <?= isset($_GET['remember']) ? 'checked' : '' ?>> Ingat Saya
             </label>
             <a href="#" class="forgot-link">Lupa Password?</a>
         </div>
