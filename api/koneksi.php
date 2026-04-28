@@ -1,6 +1,6 @@
 <?php
 $host     = "gateway01.ap-southeast-1.prod.alicloud.tidbcloud.com";
-$port     = 4000;          // harus integer, bukan string
+$port     = (int)4000;          // Pastikan integer dengan casting explicit
 $user     = "DLDDRzUzmUhedCS.root";
 $password = "5Bh4vn4GMldKXjsP";
 $database = "cepat";
@@ -21,7 +21,7 @@ $connected = mysqli_real_connect(
     $user,
     $password,
     $database,
-    $port,
+    (int)$port,  // Cast ke int untuk memastikan tipe yang benar
     NULL,
     MYSQLI_CLIENT_SSL
 );
