@@ -39,5 +39,11 @@ if (!$real_connect) {
 // Step 4: Set charset
 mysqli_set_charset($conn, "utf8mb4");
 
+// 1. Atur zona waktu untuk fungsi PHP (seperti date() di dashboard)
+date_default_timezone_set('Asia/Jakarta');
+
+// 2. Atur zona waktu untuk Database TiDB (agar fungsi NOW() dan tanggal tabel akurat)
+mysqli_query($conn, "SET time_zone = '+07:00'");
+
 // Alias untuk kompatibilitas kode lama yang pakai $koneksi
 $koneksi = $conn;
