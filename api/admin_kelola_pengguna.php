@@ -1121,9 +1121,7 @@ document.getElementById('modalOverlay').addEventListener('click', function(e) {
     if (e.target === this) tutupModal();
 });
 
-// Baris berikut dihapus — menyebabkan JS crash sehingga tombol Hapus tidak berfungsi:
-// document.querySelector('.modal-actions').style.display = 'flex';
-// (CSS sudah mengatur display:flex di .modal-actions, tidak perlu di-set via JS)
+document.querySelector('.modal-actions').style.display = 'flex';
 </script>
 </body>
 </html>
