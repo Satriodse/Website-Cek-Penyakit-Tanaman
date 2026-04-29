@@ -34,9 +34,9 @@ if ($pengguna && password_verify($password, $pengguna["password"])) {
     $_SESSION["id"]       = $pengguna["id"];
     $_SESSION["nama"]     = $pengguna["nama"];
     $_SESSION["username"] = $pengguna["username"];
-    setcookie("cu_id",   $pengguna["id"],       time()+7200, "/", "", false, true);
-    setcookie("cu_nama", $pengguna["nama"],      time()+7200, "/", "", false, true);
-    setcookie("cu_user", $pengguna["username"],  time()+7200, "/", "", false, true);
+    setcookie("cu_id",   (string)$pengguna["id"],       time()+7200, "/", "", false, true);
+    setcookie("cu_nama", (string)$pengguna["nama"],      time()+7200, "/", "", false, true);
+    setcookie("cu_user", (string)$pengguna["username"],  time()+7200, "/", "", false, true);
     header("Location: tugasweb.php"); exit();
 }
 
@@ -57,10 +57,10 @@ if ($admin && password_verify($password, $admin["password"])) {
     $_SESSION["admin_nama"]     = $admin["nama"];
     $_SESSION["admin_username"] = $admin["username"];
     $_SESSION["admin_role"]     = $admin["role"];
-    setcookie("ca_id",   $admin["id"],       time()+7200, "/", "", false, true);
-    setcookie("ca_nama", $admin["nama"],      time()+7200, "/", "", false, true);
-    setcookie("ca_user", $admin["username"],  time()+7200, "/", "", false, true);
-    setcookie("ca_role", $admin["role"],      time()+7200, "/", "", false, true);
+    setcookie("ca_id",   (string)$admin["id"],       time()+7200, "/", "", false, true);
+    setcookie("ca_nama", (string)$admin["nama"],      time()+7200, "/", "", false, true);
+    setcookie("ca_user", (string)$admin["username"],  time()+7200, "/", "", false, true);
+    setcookie("ca_role", (string)$admin["role"],      time()+7200, "/", "", false, true);
     header("Location: admindashboard.php"); exit();
 }
 
