@@ -1,8 +1,9 @@
 <?php
 session_start();
-require_once 'auth_helper.php';
-if (cek_login_pengguna()) { header("Location: tugasweb.php");       exit(); }
-if (cek_login_admin())    { header("Location: admindashboard.php");  exit(); }
+// Cek session murni saja — jangan restore dari cookie di halaman login
+// agar cookie lama tidak menyebabkan auto-redirect tanpa input kredensial
+if (isset($_SESSION["nama"]))       { header("Location: tugasweb.php");      exit(); }
+if (isset($_SESSION["admin_nama"])) { header("Location: admindashboard.php"); exit(); }
 ?>
 <!DOCTYPE html>
 <html lang="id">
