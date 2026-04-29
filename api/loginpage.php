@@ -1,9 +1,8 @@
 <?php
 session_start();
-if (isset($_SESSION["nama"]))       
-    { header("Location: tugasweb.php");    exit(); }
-if (isset($_SESSION["admin_nama"])) 
-    { header("Location: admindashboard.php"); exit(); }
+require_once 'auth_helper.php';
+if (cek_login_pengguna()) { header("Location: tugasweb.php");       exit(); }
+if (cek_login_admin())    { header("Location: admindashboard.php");  exit(); }
 ?>
 <!DOCTYPE html>
 <html lang="id">
