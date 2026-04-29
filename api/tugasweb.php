@@ -180,20 +180,53 @@ if (!cek_login_pengguna()) {
         }
         .bps-foot b { color:#4caf50; }
 
+        /* ── HAMBURGER ────────────────────────────────── */
+        .hamburger {
+            display:none; flex-direction:column; gap:5px;
+            cursor:pointer; background:none; border:none; padding:4px;
+        }
+        .hamburger span {
+            display:block; width:24px; height:2px;
+            background:var(--text-dark); border-radius:2px; transition:all .3s;
+        }
+        .hamburger.open span:nth-child(1) { transform:translateY(7px) rotate(45deg); }
+        .hamburger.open span:nth-child(2) { opacity:0; }
+        .hamburger.open span:nth-child(3) { transform:translateY(-7px) rotate(-45deg); }
+
+        /* ── MOBILE DRAWER ────────────────────────────── */
+        .mobile-menu {
+            display:none; flex-direction:column;
+            background:rgba(255,255,255,0.98);
+            border-top:1px solid var(--border-color);
+            padding:16px 20px 20px;
+        }
+        .mobile-menu.open { display:flex; }
+        .mobile-menu a {
+            text-decoration:none; color:var(--text-grey);
+            font-weight:500; font-size:15px;
+            padding:10px 0; border-bottom:1px solid #f0f0f0;
+            transition:color .2s;
+        }
+        .mobile-menu a:hover, .mobile-menu a.active { color:var(--fresh-green); }
+        .mobile-menu .mobile-auth {
+            margin-top:14px; display:flex; flex-direction:column; gap:10px;
+        }
+        .mobile-menu .mobile-auth span { font-weight:600; color:#555; font-size:14px; }
+        .mobile-menu .mobile-auth .logout-btn { text-align:center; width:100%; }
+
         /* ── RESPONSIVE ───────────────────────────────── */
         @media (max-width:768px) {
-            .main-header nav { flex-direction:column; gap:15px; padding:15px 10px; }
-            .nav-links { flex-wrap:wrap; justify-content:center; gap:15px; }
+            .nav-links    { display:none; }
+            .auth-buttons { display:none; }
+            .hamburger    { display:flex; }
             .hero-section::before { background:rgba(255,255,255,.85); }
             .hero-container { margin-left:0; text-align:center; display:flex; flex-direction:column; align-items:center; }
             .hero-text h1 { font-size:28px; }
             .feature-container { grid-template-columns:1fr; gap:20px; max-width:100%; }
             .section-padding { padding:40px 0; }
-            .auth-buttons { flex-direction:column; width:100%; gap:10px; }
-            .logout-btn { width:100%; text-align:center; }
-            .bps-head   { flex-direction:column; align-items:flex-start; }
-            .bps-toolbar{ flex-direction:column; }
-            .bps-select { width:100%; }
+            .bps-head    { flex-direction:column; align-items:flex-start; }
+            .bps-toolbar { flex-direction:column; }
+            .bps-select  { width:100%; }
         }
     </style>
 </head>
@@ -218,7 +251,22 @@ if (!cek_login_pengguna()) {
             </span>
             <a href="proseslogout.php" class="logout-btn">LOGOUT</a>
         </div>
+        <button class="hamburger" id="hamburger" aria-label="Menu" onclick="toggleMenu()">
+            <span></span><span></span><span></span>
+        </button>
     </nav>
+
+    <!-- Mobile drawer -->
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="#" class="active">BERANDA</a>
+        <a href="Analisispage.php">IDENTIFIKASI PENYAKIT</a>
+        <a href="infopenyakit.php">INFO PENYAKIT</a>
+        <a href="hasil_diagnosa.php">HASIL DIAGNOSA</a>
+        <div class="mobile-auth">
+            <span>Halo, <?= htmlspecialchars($_SESSION["username"]) ?>!</span>
+            <a href="proseslogout.php" class="logout-btn">LOGOUT</a>
+        </div>
+    </div>
 </header>
 
 <!-- HERO -->
@@ -474,6 +522,14 @@ function fmt(n){ return Number(n).toLocaleString('id-ID',{maximumFractionDigits:
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 document.addEventListener('DOMContentLoaded', bpsMuat);
+
+/* ── Hamburger toggle ── */
+function toggleMenu() {
+    var btn  = document.getElementById('hamburger');
+    var menu = document.getElementById('mobileMenu');
+    btn.classList.toggle('open');
+    menu.classList.toggle('open');
+}
 </script>
 </body>
 </html>
