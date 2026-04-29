@@ -1,5 +1,9 @@
 <?php
-ob_start();
+// ── proseslogin.php ───────────────────────────────────────────
+// PERBAIKAN:
+// 1. Hapus ob_start() — tidak diperlukan dan mengganggu pengiriman cookie
+// 2. Hapus session_write_close() ganda — cukup sekali di dalam redirect()
+// 3. Gunakan prepared statement untuk cek login gagal (lebih aman)
 
 ini_set('session.use_cookies', 1);
 ini_set('session.use_only_cookies', 1);
@@ -9,9 +13,10 @@ session_start();
 
 require_once 'koneksi.php';
 
-// ── Helper: tulis session dulu, baru redirect ─────────────────
+// ── Helper redirect ───────────────────────────────────────────
+// session_write_close() dipanggil HANYA di sini, SATU KALI saja
 function redirect($url) {
-    session_write_close(); // wajib di Vercel — flush session ke storage sebelum pindah halaman
+    session_write_close();
     if (!headers_sent()) {
         header("Location: " . $url);
         exit();
@@ -48,10 +53,10 @@ if ($pengguna && password_verify($password, $pengguna["password"])) {
     $_SESSION["id"]       = (string)$pengguna["id"];
     $_SESSION["nama"]     = $pengguna["nama"];
     $_SESSION["username"] = $pengguna["username"];
-    setcookie("cu_id",   (string)$pengguna["id"],       time()+7200, "/", "", false, true);
-    setcookie("cu_nama", (string)$pengguna["nama"],      time()+7200, "/", "", false, true);
-    setcookie("cu_user", (string)$pengguna["username"],  time()+7200, "/", "", false, true);
-    session_write_close(); 
+    // Cookie sebagai fallback utama di Vercel (session tidak persisten)
+    setcookie("cu_id",   (string)$pengguna["id"],      time()+7200, "/", "", false, true);
+    setcookie("cu_nama", $pengguna["nama"],             time()+7200, "/", "", false, true);
+    setcookie("cu_user", $pengguna["username"],         time()+7200, "/", "", false, true);
     redirect("tugasweb.php");
 }
 
@@ -71,19 +76,25 @@ if ($admin && password_verify($password, $admin["password"])) {
     $_SESSION["admin_nama"]     = $admin["nama"];
     $_SESSION["admin_username"] = $admin["username"];
     $_SESSION["admin_role"]     = $admin["role"];
-    setcookie("ca_id",   (string)$admin["id"],       time()+7200, "/", "", false, true);
-    setcookie("ca_nama", (string)$admin["nama"],      time()+7200, "/", "", false, true);
-    setcookie("ca_user", (string)$admin["username"],  time()+7200, "/", "", false, true);
-    setcookie("ca_role", (string)$admin["role"],      time()+7200, "/", "", false, true);
-    session_write_close();
+    setcookie("ca_id",   (string)$admin["id"],   time()+7200, "/", "", false, true);
+    setcookie("ca_nama", $admin["nama"],          time()+7200, "/", "", false, true);
+    setcookie("ca_user", $admin["username"],      time()+7200, "/", "", false, true);
+    setcookie("ca_role", $admin["role"],          time()+7200, "/", "", false, true);
     redirect("admindashboard.php");
 }
 
-// ── Login gagal — bedakan pesan error ────────────────────────
-$ce = mysqli_query($conn, "SELECT COUNT(*) c FROM pengguna WHERE email='" . mysqli_real_escape_string($conn, $email) . "'");
-$ca = mysqli_query($conn, "SELECT COUNT(*) c FROM admin    WHERE email='" . mysqli_real_escape_string($conn, $email) . "'");
-$jp = (int)(mysqli_fetch_assoc($ce)['c'] ?? 0);
-$ja = (int)(mysqli_fetch_assoc($ca)['c'] ?? 0);
+// ── Login gagal — pakai prepared statement (lebih aman) ───────
+$ce = mysqli_prepare($conn, "SELECT COUNT(*) c FROM pengguna WHERE email = ?");
+mysqli_stmt_bind_param($ce, "s", $email);
+mysqli_stmt_execute($ce);
+$jp = (int)(mysqli_fetch_assoc(mysqli_stmt_get_result($ce))['c'] ?? 0);
+mysqli_stmt_close($ce);
+
+$ca = mysqli_prepare($conn, "SELECT COUNT(*) c FROM admin WHERE email = ?");
+mysqli_stmt_bind_param($ca, "s", $email);
+mysqli_stmt_execute($ca);
+$ja = (int)(mysqli_fetch_assoc(mysqli_stmt_get_result($ca))['c'] ?? 0);
+mysqli_stmt_close($ca);
 
 if ($jp === 0 && $ja === 0) {
     redirect("loginpage.php?error=Email+tidak+terdaftar!");
