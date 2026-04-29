@@ -1068,7 +1068,7 @@ $roleBadge = $roleLabels[$role] ?? $role;
                         </td>
                         <td>
                             <button class="btn-hapus"
-                                onclick="bukaModal(<?= $p['id'] ?>, '<?= htmlspecialchars(addslashes($p['nama'])) ?>', '<?= htmlspecialchars(addslashes($p['email'])) ?>')">
+                                onclick="bukaModal('<?= $p['id'] ?>', '<?= htmlspecialchars(addslashes($p['nama'])) ?>', '<?= htmlspecialchars(addslashes($p['email'])) ?>')">
                                 🗑️ Hapus
                             </button>
                         </td>
@@ -1121,7 +1121,8 @@ document.getElementById('modalOverlay').addEventListener('click', function(e) {
     if (e.target === this) tutupModal();
 });
 
-document.querySelector('.modal-actions').style.display = 'flex';
+// Baris di bawah ini DIHAPUS karena menyebabkan JS crash dan tombol Hapus mati:
+// document.querySelector('.modal-actions').style.display = 'flex';
 </script>
 </body>
 </html>
