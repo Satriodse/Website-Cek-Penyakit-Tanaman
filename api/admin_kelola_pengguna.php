@@ -1083,6 +1083,25 @@ $roleBadge = $roleLabels[$role] ?? $role;
     </div>
 </div>
 
+<script>
+function bukaModal(id, nama, email) {
+    document.getElementById('modal-id').value    = id;
+    document.getElementById('modal-nama').textContent  = nama;
+    document.getElementById('modal-email').textContent = email;
+    document.getElementById('modalOverlay').classList.add('show');
+}
+
+function tutupModal() {
+    document.getElementById('modalOverlay').classList.remove('show');
+}
+
+document.getElementById('modalOverlay').addEventListener('click', function(e) {
+    if (e.target === this) tutupModal();
+});
+
+// Baris di bawah ini DIHAPUS karena menyebabkan JS crash dan tombol Hapus mati:
+// document.querySelector('.modal-actions').style.display = 'flex';
+</script>
 <div class="overlay" id="modalOverlay">
     <div class="modal">
         <div class="modal-icon">🗑️</div>
@@ -1104,25 +1123,5 @@ $roleBadge = $roleLabels[$role] ?? $role;
         </div>
     </div>
 </div>
-
-<script>
-function bukaModal(id, nama, email) {
-    document.getElementById('modal-id').value    = id;
-    document.getElementById('modal-nama').textContent  = nama;
-    document.getElementById('modal-email').textContent = email;
-    document.getElementById('modalOverlay').classList.add('show');
-}
-
-function tutupModal() {
-    document.getElementById('modalOverlay').classList.remove('show');
-}
-
-document.getElementById('modalOverlay').addEventListener('click', function(e) {
-    if (e.target === this) tutupModal();
-});
-
-// Baris di bawah ini DIHAPUS karena menyebabkan JS crash dan tombol Hapus mati:
-// document.querySelector('.modal-actions').style.display = 'flex';
-</script>
 </body>
 </html>

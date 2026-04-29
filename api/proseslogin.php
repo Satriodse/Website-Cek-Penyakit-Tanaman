@@ -49,6 +49,7 @@ if ($pengguna && password_verify($password, $pengguna["password"])) {
     setcookie("cu_id",   (string)$pengguna["id"],       time()+7200, "/", "", false, true);
     setcookie("cu_nama", (string)$pengguna["nama"],      time()+7200, "/", "", false, true);
     setcookie("cu_user", (string)$pengguna["username"],  time()+7200, "/", "", false, true);
+    session_write_close(); 
     redirect("tugasweb.php");
 }
 
@@ -72,6 +73,7 @@ if ($admin && password_verify($password, $admin["password"])) {
     setcookie("ca_nama", (string)$admin["nama"],      time()+7200, "/", "", false, true);
     setcookie("ca_user", (string)$admin["username"],  time()+7200, "/", "", false, true);
     setcookie("ca_role", (string)$admin["role"],      time()+7200, "/", "", false, true);
+    session_write_close();
     redirect("admindashboard.php");
 }
 
