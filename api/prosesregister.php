@@ -57,7 +57,7 @@ mysqli_stmt_close($cekUsername);
 // Simpan ke database
 $passwordHash = password_hash($password, PASSWORD_DEFAULT);
 $stmt = mysqli_prepare($conn,
-    "INSERT INTO pengguna (nama, username, email, password, created_at) VALUES (?, ?, ?, ?, NOW())");
+    "INSERT INTO pengguna (id, nama, username, email, password, created_at) VALUES (?, ?, ?, ?, ?, NOW())");
 mysqli_stmt_bind_param($stmt, "ssss", $nama, $username, $email, $passwordHash);
 
 if (mysqli_stmt_execute($stmt)) {
