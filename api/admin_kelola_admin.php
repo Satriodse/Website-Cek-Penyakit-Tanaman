@@ -19,32 +19,42 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["action"])) {
     if ($_POST["action"] === "tambah") {
         $nama     = trim($_POST["nama"]);
         $username = trim($_POST["username"]);
+        $email    = trim($_POST["email"]); // Menambahkan email
         $password = $_POST["password"];
         $role     = $_POST["role"];
 
-        if (empty($nama) || empty($username) || empty($password)) {
+        if (empty($nama) || empty($username) || empty($email) || empty($password)) {
             $msg = "Semua field wajib diisi!";
             $msgType = "danger";
         } else {
-            // Cek username sudah ada?
-            $cek = mysqli_prepare($conn, "SELECT id FROM admin WHERE username = ?");
-            mysqli_stmt_bind_param($cek, "s", $username);
+            // Cek apakah username sudah ada
+            $cek = mysqli_prepare($conn, "SELECT id FROM admin WHERE username = ? OR email = ?");
+            mysqli_stmt_bind_param($cek, "ss", $username, $email);
             mysqli_stmt_execute($cek);
             mysqli_stmt_store_result($cek);
 
             if (mysqli_stmt_num_rows($cek) > 0) {
-                $msg = "Username sudah digunakan!";
+                $msg = "Username atau Email sudah terdaftar!";
                 $msgType = "danger";
             } else {
-                $hash = password_hash($password, PASSWORD_DEFAULT);
-                $stmt = mysqli_prepare($conn, "INSERT INTO admin (nama, username, password, role, is_active) VALUES (?, ?, ?, ?, 1)");
-                mysqli_stmt_bind_param($stmt, "ssss", $nama, $username, $hash, $role);
+                // Generate ID Unik 15 digit
+                $id_admin = date('ymdHis') . mt_rand(100, 999);
+                $passHash = password_hash($password, PASSWORD_DEFAULT);
+
+                // Query INSERT dengan id, email, dan created_at
+                $stmt = mysqli_prepare($conn, "INSERT INTO admin (id, nama, username, email, password, role, created_at) VALUES (?, ?, ?, ?, ?, ?, NOW())");
+                
+                // Bind 6 parameter (s = string)
+                mysqli_stmt_bind_param($stmt, "ssssss", $id_admin, $nama, $username, $email, $passHash, $role);
+
                 if (mysqli_stmt_execute($stmt)) {
                     $msg = "Admin baru berhasil ditambahkan!";
+                    $msgType = "success";
                 } else {
-                    $msg = "Gagal menambahkan admin.";
+                    $msg = "Gagal menambahkan admin: " . mysqli_error($conn);
                     $msgType = "danger";
                 }
+                mysqli_stmt_close($stmt);
             }
             mysqli_stmt_close($cek);
         }
@@ -611,8 +621,7 @@ if ($res) {
     </div>
 
     <div class="two-col">
-        <!-- Form tambah admin -->
-        <div class="form-card">
+       <div class="form-card">
             <h2>➕ Tambah Admin Baru</h2>
             <form method="POST" action="admin_kelola_admin.php">
                 <input type="hidden" name="action" value="tambah">
@@ -624,6 +633,11 @@ if ($res) {
                     <label>Username *</label>
                     <input type="text" name="username" placeholder="Username untuk login" required>
                 </div>
+
+                <div class="form-group">
+                    <label>Email *</label>
+                    <input type="email" name="email" placeholder="Alamat email aktif" required>
+                </div>
                 <div class="form-group">
                     <label>Password *</label>
                     <input type="password" name="password" placeholder="Password yang kuat" required>
@@ -632,6 +646,8 @@ if ($res) {
                     <label>Role / Peran *</label>
                     <select name="role">
                         <option value="konten">📋 Admin Konten – Kelola Info Penyakit</option>
+                        
+                        <option value="pengguna">👤 Admin Pengguna – Kelola Akun</option>
                         <option value="superadmin">👑 Super Admin – Akses Penuh</option>
                     </select>
                 </div>
