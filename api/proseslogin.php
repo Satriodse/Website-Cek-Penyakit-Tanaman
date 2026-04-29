@@ -1,4 +1,6 @@
 <?php
+ob_start(); // Buffer output — wajib agar header/setcookie tidak gagal di Vercel
+
 ini_set('session.use_cookies', 1);
 ini_set('session.use_only_cookies', 1);
 ini_set('session.cookie_httponly', 1);
@@ -7,22 +9,36 @@ session_start();
 
 require_once 'koneksi.php';
 
+// ── Helper: redirect yang aman di Vercel ─────────────────────
+function redirect($url) {
+    ob_end_clean();
+    if (!headers_sent()) {
+        header("Location: " . $url);
+        exit();
+    }
+    // Fallback JS jika header sudah terlanjur terkirim
+    echo '<script>window.location.href=' . json_encode($url) . ';</script>';
+    echo '<noscript><meta http-equiv="refresh" content="0;url=' . htmlspecialchars($url) . '"></noscript>';
+    exit();
+}
+
+// ── Hanya terima POST ─────────────────────────────────────────
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-    header("Location: loginpage.php"); exit();
+    redirect("loginpage.php");
 }
 
 $email    = trim($_POST["email"]    ?? '');
 $password = $_POST["password"] ?? '';
 
 if (empty($email) || empty($password)) {
-    header("Location: loginpage.php?error=Email+dan+password+harus+diisi!"); exit();
+    redirect("loginpage.php?error=Email+dan+password+harus+diisi!");
 }
 
-// Cek pengguna
+// ── Cek pengguna ──────────────────────────────────────────────
 $stmt = mysqli_prepare($conn,
     "SELECT id, nama, username, password FROM pengguna WHERE email = ? LIMIT 1");
 if (!$stmt) {
-    header("Location: loginpage.php?error=" . urlencode("DB error: " . mysqli_error($conn))); exit();
+    redirect("loginpage.php?error=" . urlencode("DB error: " . mysqli_error($conn)));
 }
 mysqli_stmt_bind_param($stmt, "s", $email);
 mysqli_stmt_execute($stmt);
@@ -37,14 +53,14 @@ if ($pengguna && password_verify($password, $pengguna["password"])) {
     setcookie("cu_id",   (string)$pengguna["id"],       time()+7200, "/", "", false, true);
     setcookie("cu_nama", (string)$pengguna["nama"],      time()+7200, "/", "", false, true);
     setcookie("cu_user", (string)$pengguna["username"],  time()+7200, "/", "", false, true);
-    header("Location: tugasweb.php"); exit();
+    redirect("tugasweb.php");
 }
 
-// Cek admin
+// ── Cek admin ─────────────────────────────────────────────────
 $stmt2 = mysqli_prepare($conn,
     "SELECT id, nama, username, password, role FROM admin WHERE email = ? AND is_active = 1 LIMIT 1");
 if (!$stmt2) {
-    header("Location: loginpage.php?error=" . urlencode("DB error admin: " . mysqli_error($conn))); exit();
+    redirect("loginpage.php?error=" . urlencode("DB error admin: " . mysqli_error($conn)));
 }
 mysqli_stmt_bind_param($stmt2, "s", $email);
 mysqli_stmt_execute($stmt2);
@@ -61,17 +77,17 @@ if ($admin && password_verify($password, $admin["password"])) {
     setcookie("ca_nama", (string)$admin["nama"],      time()+7200, "/", "", false, true);
     setcookie("ca_user", (string)$admin["username"],  time()+7200, "/", "", false, true);
     setcookie("ca_role", (string)$admin["role"],      time()+7200, "/", "", false, true);
-    header("Location: admindashboard.php"); exit();
+    redirect("admindashboard.php");
 }
 
-// Tidak cocok — bedakan pesan error
-$ce = mysqli_query($conn, "SELECT COUNT(*) c FROM pengguna WHERE email='" . mysqli_real_escape_string($conn,$email) . "'");
-$ca = mysqli_query($conn, "SELECT COUNT(*) c FROM admin WHERE email='" . mysqli_real_escape_string($conn,$email) . "'");
+// ── Login gagal — bedakan pesan error ────────────────────────
+$ce = mysqli_query($conn, "SELECT COUNT(*) c FROM pengguna WHERE email='" . mysqli_real_escape_string($conn, $email) . "'");
+$ca = mysqli_query($conn, "SELECT COUNT(*) c FROM admin    WHERE email='" . mysqli_real_escape_string($conn, $email) . "'");
 $jp = (int)(mysqli_fetch_assoc($ce)['c'] ?? 0);
 $ja = (int)(mysqli_fetch_assoc($ca)['c'] ?? 0);
-if ($jp == 0 && $ja == 0) {
-    header("Location: loginpage.php?error=Email+tidak+terdaftar!");
+
+if ($jp === 0 && $ja === 0) {
+    redirect("loginpage.php?error=Email+tidak+terdaftar!");
 } else {
-    header("Location: loginpage.php?error=Password+salah!");
+    redirect("loginpage.php?error=Password+salah!");
 }
-exit();
