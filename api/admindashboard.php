@@ -1,11 +1,10 @@
 <?php
 session_start();
 require_once 'koneksi.php';
-
-if (!isset($_SESSION["admin_nama"])) {
-    header("Location: adminloginpage.php"); exit();
+require_once 'auth_helper.php';
+if (!cek_login_admin()) {
+    header("Location: loginpage.php"); exit();
 }
-
 $role     = $_SESSION["admin_role"];
 $nama     = $_SESSION["admin_nama"];
 $username = $_SESSION["admin_username"];

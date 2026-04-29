@@ -1,7 +1,8 @@
 <?php
 session_start();
-// Jika belum login, redirect ke halaman login
-if (!isset($_SESSION["nama"])) {
+require_once 'auth_helper.php';
+// Cek login via session ATAU cookie
+if (!cek_login_pengguna()) {
     header("Location: loginpage.php");
     exit();
 }
@@ -13,7 +14,7 @@ if (!isset($_SESSION["nama"])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cek Penyakit Tanaman (CePaT)</title>
-    <link rel="stylesheet" href="../css/tugasweb.css">
+    <link rel="stylesheet" href="tugasweb.css">
 </head>
 <body>
 
@@ -21,14 +22,14 @@ if (!isset($_SESSION["nama"])) {
 <header class="main-header">
     <nav class="container">
         <div class="logo-area">
-            <img src="../logocepat.png" alt="Logo CePaT">
+            <img src="logocepat.png" alt="Logo CePaT">
             <span class="logo-text">CePaT</span>
         </div>
         <ul class="nav-links">
             <li><a href="#" class="active">BERANDA</a></li>
             <li><a href="Analisispage.php">IDENTIFIKASI PENYAKIT</a></li>
             <li><a href="infopenyakit.php">INFO PENYAKIT</a></li>
-            <li><a href="#">HASIL IDENTIFIKASI</a></li>
+            <li><a href="#">TENTANG KAMI</a></li>
         </ul>
         <div class="auth-buttons">
             <!-- Tampilkan nama pengguna yang sedang login -->
@@ -48,7 +49,7 @@ if (!isset($_SESSION["nama"])) {
             <h1>DETEKSI DINI &<br> KENDALIKAN PENYAKIT<br> TANAMAN ANDA</h1>
             <p>Platform Digital Pintar untuk Diagnosis Akurat, Penanganan Efektif, dan Peningkatan Hasil Panen Petani Indonesia.</p>
            <a href="Analisispage.php" class="cta-btn green-btn">
-                <img src="../logokamera.png" alt="kamera">
+                <img src="logokamera.png" alt="kamera">
                 MULAI IDENTIFIKASI SEKARANG
             </a>
         </div>
@@ -60,14 +61,14 @@ if (!isset($_SESSION["nama"])) {
     <div class="container feature-container">
         <div class="feature-card">
             <div class="icon-group">
-                <img src="../daun.jpg" alt="Ikon Daun">
+                <img src="daun.jpg" alt="Ikon Daun">
             </div>
             <h3>IDENTIFIKASI PENYAKIT</h3>
             <p>Unggah foto tanaman sakit untuk diagnosis cepat.</p>
         </div>
         <div class="feature-card">
             <div class="icon-group">
-                <img src="../buku.png" alt="Ikon Buku">
+                <img src="buku.png" alt="Ikon Buku">
             </div>
             <h3>INFO PENYAKIT</h3>
             <p>Cari informasi lengkap tentang ribuan jenis penyakit, gejala, dan cara mengatasi.</p>
@@ -165,7 +166,7 @@ if (!isset($_SESSION["nama"])) {
     </div>
 </footer>
 
-    <script src="../tugasweb.js"></script>
+    <script src="tugasweb.js"></script>
     <script>
     /* ── BPS DATA MODULE ───────────────────────────────────
      * Struktur JSON BPS (model/data):
@@ -178,16 +179,6 @@ if (!isset($_SESSION["nama"])) {
     var _prov = [], _bln = [], _filt = [];
 
     // ── 1. AMBIL DATA DARI api.php ─────────────────────
-    // Struktur JSON BPS yang BENAR:
-    //   j.vervar    = [{val:1100, label:"ACEH"}, ...]          → 38 provinsi
-    //   j.turtahun  = [{val:1, label:"Januari"}, ...]          → bulan
-    //   j.tahun     = [{val:126, label:"2026"}]                → tahun
-    //   j.var       = [{val:2506, ...}]                        → variabel
-    //   j.datacontent = {"1100250601261": 55380.19, ...}       → nilai
-    //
-    // Format KEY datacontent: {vervar_val}{var_val}{tahun_val}{turtahun_val}
-    // Contoh: "1100250601261"
-    //   1100 = ACEH, 2506 = var, 126 = tahun 2026, 1 = Januari
     async function bpsMuat() {
         document.getElementById('bps-loading').style.display = 'flex';
         document.getElementById('bps-error').style.display   = 'none';
@@ -199,52 +190,38 @@ if (!isset($_SESSION["nama"])) {
 
             var j = await res.json();
 
+            // Tangani error dari BPS atau api.php
             if (j.error)  throw new Error(j.error);
             if (j.status && j.status !== 'OK')
                 throw new Error(j['data-availability'] || 'Data tidak tersedia di BPS.');
 
-            // ── Ambil komponen dari JSON BPS ──
-            var vervar     = j.vervar;     // array provinsi
-            var turtahun   = j.turtahun;   // array bulan
-            var tahun      = j.tahun;      // array tahun
-            var varData    = j.var;        // array variabel
-            var datacontent = j.datacontent; // object nilai
+            // ── Parse struktur BPS ──
+            var d    = j.data;
+            var rows = d[1];   // array provinsi
+            var cols = d[2];   // array bulan
+            var vals = d[3];   // array nilai flat
 
-            if (!vervar || !turtahun || !tahun || !datacontent)
-                throw new Error('Struktur JSON tidak lengkap. Cek respons API.');
+            if (!rows || !cols || !vals)
+                throw new Error('Struktur JSON dari API BPS tidak dikenali. Cek endpoint.');
 
-            // Ambil nilai kode untuk membangun key
-            // Format key datacontent BPS:
-            // {prov_val 4digit}{var_val 4digit}{tahun_val 4digit leadingzero}{bulan_val}
-            // Contoh: 1100 + 2506 + 0126 + 1 = "1100250601261" → ACEH, Januari 2026
+            // Temukan key label baris (string pertama bukan 'val')
+            var kb = Object.keys(rows[0]).find(function(k){ return typeof rows[0][k]==='string'; });
+            // Temukan key label kolom
+            var kc = Object.keys(cols[0]).find(function(k){ return typeof cols[0][k]==='string'; });
+            // Temukan key nilai (bukan kb/kc)
+            var kv = Object.keys(vals[0]).find(function(k){ return k!==kb && k!==kc; });
 
-            // Pad number ke N digit dengan leading zero
-            function pad(n, len) {
-                return String(n).padStart(len, '0');
-            }
-
-            var kodeVar   = pad(varData[0].val, 4);   // "2506"
-            var kodeTahun = pad(tahun[0].val, 4);     // "0126"
-
-            // Bulan yang tersedia (exclude Tahunan val=13)
-            var bulanList = turtahun.filter(function(b){ return b.val !== 13; });
-
-            // Provinsi yang ditampilkan (exclude INDONESIA val=9999)
-            var provList = vervar.filter(function(p){ return p.val !== 9999; });
-
-            // ── Bangun _bln ──
-            _bln = bulanList.map(function(b){ return b.label; });
-
-            // ── Bangun _prov ──
-            _prov = provList.map(function(p) {
-                var kodeProv = pad(p.val, 4);
-                var vals = bulanList.map(function(b) {
-                    // Key: {prov 4digit}{var 4digit}{tahun 4digit}{bulan val}
-                    var key = kodeProv + kodeVar + kodeTahun + String(b.val);
-                    var v   = datacontent[key];
-                    return (v !== undefined && v !== null) ? parseFloat(v) : null;
+            _bln  = cols.map(function(c){ return c[kc] || '-'; });
+            _prov = rows.map(function(r, i) {
+                var vs = cols.map(function(_, j) {
+                    var o   = vals[i * cols.length + j];
+                    if (!o) return null;
+                    var raw = (o[kv] !== undefined) ? o[kv] : (o.val !== undefined ? o.val : null);
+                    if (raw === null || raw === '' || raw === '-') return null;
+                    var n = parseFloat(String(raw).replace(/[^0-9.-]/g, ''));
+                    return isNaN(n) ? null : n;
                 });
-                return { label: p.label, vals: vals };
+                return { label: r[kb] || ('Baris ' + (i+1)), vals: vs };
             });
 
             // Isi dropdown bulan
