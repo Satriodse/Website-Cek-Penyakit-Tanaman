@@ -60,7 +60,7 @@ if (!cek_login_pengguna()) {
         /* ── HERO ─────────────────────────────────────── */
         .hero-section {
             position:relative;
-            background-image:url('fotopetani.jpg.jpeg');
+            background-image:url('../fotopetani.jpg.jpeg');
             background-size:cover; background-position:center; background-repeat:no-repeat;
             min-height:100vh; display:flex; align-items:center; padding-top:80px;
         }
@@ -203,7 +203,7 @@ if (!cek_login_pengguna()) {
 <header class="main-header">
     <nav class="container">
         <div class="logo-area">
-            <img src="logocepat.png" alt="Logo CePaT">
+            <img src="../logocepat.png" alt="Logo CePaT">
             <span class="logo-text">CePaT</span>
         </div>
         <ul class="nav-links">
@@ -211,7 +211,6 @@ if (!cek_login_pengguna()) {
             <li><a href="Analisispage.php">IDENTIFIKASI PENYAKIT</a></li>
             <li><a href="infopenyakit.php">INFO PENYAKIT</a></li>
             <li><a href="hasil_diagnosa.php">HASIL DIAGNOSA</a></li>
-            <li><a href="#">TENTANG KAMI</a></li>
         </ul>
         <div class="auth-buttons">
             <span style="font-weight:600;color:#555;align-self:center;">
@@ -229,7 +228,7 @@ if (!cek_login_pengguna()) {
             <h1>DETEKSI DINI &<br>KENDALIKAN PENYAKIT<br>TANAMAN ANDA</h1>
             <p>Platform Digital Pintar untuk Diagnosis Akurat, Penanganan Efektif, dan Peningkatan Hasil Panen Petani Indonesia.</p>
             <a href="Analisispage.php" class="green-btn">
-                <img src="logokamera.png" alt="kamera">
+                <img src="../logokamera.png" alt="kamera">
                 MULAI IDENTIFIKASI SEKARANG
             </a>
         </div>
@@ -240,12 +239,12 @@ if (!cek_login_pengguna()) {
 <section class="feature-cards section-padding">
     <div class="container feature-container">
         <div class="feature-card">
-            <div class="icon-group"><img src="daun.jpg" alt="Ikon Daun"></div>
+            <div class="icon-group"><img src="../daun.jpg" alt="Ikon Daun"></div>
             <h3>IDENTIFIKASI PENYAKIT</h3>
             <p>Unggah foto tanaman sakit untuk diagnosis cepat.</p>
         </div>
         <div class="feature-card">
-            <div class="icon-group"><img src="buku.png" alt="Ikon Buku"></div>
+            <div class="icon-group"><img src="../buku.png" alt="Ikon Buku"></div>
             <h3>INFO PENYAKIT</h3>
             <p>Cari informasi lengkap tentang ribuan jenis penyakit, gejala, dan cara mengatasi.</p>
         </div>
@@ -280,7 +279,7 @@ if (!cek_login_pengguna()) {
                 <option value="">Urutan Default</option>
                 <option value="desc">Total: Terbesar</option>
                 <option value="asc">Total: Terkecil</option>
-                <option value="az">Nama A–Z</option>
+                <option value="az">Nama A-Z</option>
             </select>
         </div>
 
@@ -303,7 +302,7 @@ if (!cek_login_pengguna()) {
                 </table>
             </div>
             <div class="bps-foot">
-                <span id="bps-info">–</span>
+                <span id="bps-info">-</span>
                 <b>Sumber: webapi.bps.go.id · var/2506</b>
             </div>
         </div>
