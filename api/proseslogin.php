@@ -1,5 +1,6 @@
 <?php
-ob_start(); // Buffer output — wajib agar header/setcookie tidak gagal di Vercel
+// CATATAN: ob_start() dihapus — menyebabkan ob_end_clean() membuang cookies & session
+// sebelum sempat dikirim ke browser, sehingga login selalu gagal (halaman refresh kosong).
 
 ini_set('session.use_cookies', 1);
 ini_set('session.use_only_cookies', 1);
@@ -9,9 +10,8 @@ session_start();
 
 require_once 'koneksi.php';
 
-// ── Helper: redirect yang aman di Vercel ─────────────────────
+// ── Helper: redirect yang aman ────────────────────────────────
 function redirect($url) {
-    ob_end_clean();
     if (!headers_sent()) {
         header("Location: " . $url);
         exit();
@@ -46,7 +46,8 @@ $pengguna = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
 mysqli_stmt_close($stmt);
 
 if ($pengguna && password_verify($password, $pengguna["password"])) {
-    session_regenerate_id(true);
+    // Gunakan false agar session lama tidak langsung dihapus sebelum data baru tersimpan
+    session_regenerate_id(false);
     $_SESSION["id"]       = $pengguna["id"];
     $_SESSION["nama"]     = $pengguna["nama"];
     $_SESSION["username"] = $pengguna["username"];
@@ -68,7 +69,7 @@ $admin = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt2));
 mysqli_stmt_close($stmt2);
 
 if ($admin && password_verify($password, $admin["password"])) {
-    session_regenerate_id(true);
+    session_regenerate_id(false);
     $_SESSION["admin_id"]       = $admin["id"];
     $_SESSION["admin_nama"]     = $admin["nama"];
     $_SESSION["admin_username"] = $admin["username"];

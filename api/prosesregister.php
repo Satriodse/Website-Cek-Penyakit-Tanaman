@@ -49,8 +49,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Hash password sebelum disimpan ke database
     $passwordHash = password_hash($password, PASSWORD_DEFAULT);
 
-    // Simpan data ke tabel pengguna
-    $stmt = mysqli_prepare($conn, "INSERT INTO pengguna (nama, username, email, password) VALUES (?, ?, ?, ?)");
+    // Simpan data ke tabel pengguna (created_at diisi eksplisit agar tercatat meski kolom tidak punya DEFAULT)
+    $stmt = mysqli_prepare($conn, "INSERT INTO pengguna (nama, username, email, password, created_at) VALUES (?, ?, ?, ?, NOW())");
     mysqli_stmt_bind_param($stmt, "ssss", $nama, $username, $email, $passwordHash);
 
     if (mysqli_stmt_execute($stmt)) {
