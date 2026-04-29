@@ -19,21 +19,24 @@ $msgType = 'success';
 // ── HAPUS PENGGUNA ─────────────────────────────────────────
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["action"])) {
     if ($_POST["action"] === "hapus") {
-        $id = (int) $_POST["id"];
+        $id = $_POST["id"]; // Hapus (int) agar nilai ID besar tidak menjadi 0
 
         $rNama = mysqli_prepare($conn, "SELECT nama FROM pengguna WHERE id = ?");
-        mysqli_stmt_bind_param($rNama, "i", $id);
+        mysqli_stmt_bind_param($rNama, "s", $id); // Gunakan "s" (string)
         mysqli_stmt_execute($rNama);
         $resNama = mysqli_stmt_get_result($rNama);
         $dataNama = mysqli_fetch_assoc($resNama);
         $namaHapus = $dataNama['nama'] ?? 'Pengguna';
 
         $stmt = mysqli_prepare($conn, "DELETE FROM pengguna WHERE id = ?");
-        mysqli_stmt_bind_param($stmt, "i", $id);
-        if (mysqli_stmt_execute($stmt)) {
+        mysqli_stmt_bind_param($stmt, "s", $id); // Gunakan "s" (string)
+        
+        // Cek apakah data benar-benar terhapus
+        if (mysqli_stmt_execute($stmt) && mysqli_stmt_affected_rows($stmt) > 0) {
             $msg = "Akun pengguna <strong>$namaHapus</strong> berhasil dihapus.";
+            $msgType = "success";
         } else {
-            $msg = "Gagal menghapus pengguna.";
+            $msg = "Gagal menghapus pengguna. (Data tidak ditemukan)";
             $msgType = "danger";
         }
     }
@@ -1115,8 +1118,9 @@ document.getElementById('modalOverlay').addEventListener('click', function(e) {
             ⚠️ Tindakan ini <strong>tidak dapat dibatalkan</strong>. Data pengguna akan hilang permanen.
         </p>
         <div class="modal-actions">
-            <button class="modal-cancel" onclick="tutupModal()">Batal</button>
-            <form method="POST" action="admin_kelola_pengguna.php" id="formHapus">
+            <button type="button" class="modal-cancel" onclick="tutupModal()">Batal</button>
+            
+            <form method="POST" action="" id="formHapus">
                 <input type="hidden" name="action" value="hapus">
                 <input type="hidden" name="id" id="modal-id" value="">
                 <button type="submit" class="modal-confirm">Ya, Hapus</button>
