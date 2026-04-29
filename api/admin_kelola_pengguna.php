@@ -1,10 +1,11 @@
 <?php
 session_start();
 require_once 'koneksi.php';
+require_once 'auth_helper.php';
 
 // Hanya superadmin dan admin_pengguna yang bisa akses
-if (!isset($_SESSION["admin_nama"])) {
-    header("Location: adminloginpage.php"); exit();
+if (!cek_login_admin()) {
+    header("Location: loginpage.php"); exit();
 }
 
 $role = $_SESSION["admin_role"];
