@@ -1015,7 +1015,8 @@ $roleBadge = $roleLabels[$role] ?? $role;
                     </h2>
                     <p><?= $total ?> pengguna ditemukan</p>
                 </div>
-
+                
+                <div class="search-form">
                 <form method="GET" action="admin_kelola_pengguna.php" class="search-form">
                     <div class="search-wrap">
                         <span class="search-icon">🔍</span>
@@ -1025,7 +1026,7 @@ $roleBadge = $roleLabels[$role] ?? $role;
                     <?php if ($keyword): ?>
                     <a href="admin_kelola_pengguna.php" class="btn-reset">Reset</a>
                     <?php endif; ?>
-                </form>
+                </form></div>
             </div>
             
             <div class="table-responsive">
