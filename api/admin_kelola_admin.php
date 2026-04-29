@@ -432,6 +432,25 @@ if ($res) {
             flex-direction: column;
             gap: 15px;
         }
+
+        /* Form menyesuaikan layar */
+        .form-group {
+            width: 100%;
+        }
+        input[type="text"], 
+        input[type="password"], 
+        select, 
+        textarea {
+            width: 100%;
+            box-sizing: border-box; /* Agar padding tidak menambah lebar elemen */
+        }
+    
+        /* Tombol simpan/batal menjadi sejajar ke bawah atau melebar */
+        .btn-action {
+            width: 100%;
+            margin-bottom: 10px;
+            text-align: center;
+        }
         }
     </style>
 </head>
