@@ -1,11 +1,11 @@
 <?php
 session_start();
 require_once 'koneksi.php';
-require_once 'auth_helper.php';
 
 // Hanya admin yang bisa akses
-if (!cek_login_admin()) {
-    header("Location: loginpage.php"); exit();
+if (!isset($_SESSION["admin_nama"])) {
+    header("Location: adminloginpage.php");
+    exit();
 }
 
 $role = $_SESSION["admin_role"];
@@ -437,56 +437,143 @@ if (isset($_GET["edit"])) {
         }
 
         /* ── RESPONSIVE PADA LAYAR KECIL (HP & TABLET) ── */
-        @media screen and (max-width: 768px) {
-    
-        /* 1. Jika ada layout flexbox/grid yang berdampingan, ubah jadi bertumpuk */
-        .dashboard-container, .main-layout {
-            display: flex;
-            flex-direction: column; /* Mengubah kiri-kanan menjadi atas-bawah */
-        }
+    /* ══════════════════════════════════════════════════
+       RESPONSIVE MOBILE — SIDEBAR OVERLAY PATTERN
+    ══════════════════════════════════════════════════ */
 
-        /* 2. Sesuaikan Sidebar */
+    /* Tombol hamburger (tampil di HP) */
+    .hamburger {
+        display: none;
+        position: fixed;
+        top: 14px; left: 14px;
+        z-index: 400;
+        background: #4caf50;
+        border: none;
+        border-radius: 8px;
+        width: 40px; height: 40px;
+        cursor: pointer;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        box-shadow: 0 2px 8px rgba(0,0,0,.25);
+    }
+    .hamburger span {
+        display: block;
+        width: 20px; height: 2px;
+        background: #fff;
+        border-radius: 2px;
+        transition: all .3s;
+    }
+
+    /* Overlay gelap di belakang sidebar */
+    .sidebar-overlay {
+        display: none;
+        position: fixed; inset: 0;
+        background: rgba(0,0,0,.5);
+        z-index: 150;
+        backdrop-filter: blur(2px);
+    }
+    .sidebar-overlay.show { display: block; }
+
+    @media (max-width: 768px) {
+
+        /* Tampilkan tombol hamburger */
+        .hamburger { display: flex; }
+
+        /* Sidebar: sembunyikan di kiri, slide in saat aktif */
         .sidebar {
-            width: 100%;
-            height: auto;
-            position: relative; /* Jangan jadikan fixed di HP jika menghalangi konten */
-            padding: 15px;
+            transform: translateX(-100%);
+            transition: transform .3s cubic-bezier(.4,0,.2,1);
+            z-index: 300;
+            width: 260px !important;
+            position: fixed !important;
+            height: 100vh !important;
+        }
+        .sidebar.open { transform: translateX(0); }
+
+        /* Konten utama: margin-left 0 */
+        .main {
+            margin-left: 0 !important;
+            width: 100% !important;
         }
 
-        /* 3. Sesuaikan Area Konten Utama */
-        .main-content {
-            margin-left: 0 !important; /* Hilangkan margin kiri yang biasanya disiapkan untuk sidebar */
-            width: 100%;
-            padding: 15px;
+        /* Topbar: padding kiri lebih besar agar tidak ketutup hamburger */
+        .topbar {
+            padding-left: 64px !important;
         }
 
-        /* 4. Sesuaikan Kartu (Card) Info di Dashboard */
-        .card-container {
-            grid-template-columns: 1fr; /* Jika pakai grid, ubah jadi 1 kolom */
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
+        /* Content area padding lebih kecil */
+        .content {
+            padding: 20px 16px !important;
         }
 
-        /* Form menyesuaikan layar */
-        .form-group {
-            width: 100%;
+        /* Stats grid: 1 kolom di HP kecil, 2 kolom di HP besar */
+        .stats-grid,
+        .stats-row {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 12px !important;
         }
-        input[type="text"], 
-        input[type="password"], 
-        select, 
-        textarea {
-            width: 100%;
-            box-sizing: border-box; /* Agar padding tidak menambah lebar elemen */
+
+        /* Action cards: 1 kolom */
+        .action-grid {
+            grid-template-columns: 1fr !important;
         }
-    
-        /* Tombol simpan/batal menjadi sejajar ke bawah atau melebar */
-        .btn-action {
-            width: 100%;
-            margin-bottom: 10px;
-            text-align: center;
+
+        /* Two-column layout: 1 kolom */
+        .two-col {
+            grid-template-columns: 1fr !important;
         }
+
+        /* Form card: tidak sticky di HP */
+        .form-card {
+            position: static !important;
         }
+
+        /* Tabel: scroll horizontal */
+        .table-card,
+        .info-table-card {
+            overflow-x: auto;
+        }
+
+        /* Count info: wrap */
+        .count-info {
+            flex-wrap: wrap;
+        }
+        .count-box {
+            flex: 1;
+            min-width: calc(50% - 10px);
+        }
+
+        /* Action card text lebih kecil */
+        .action-card h3 { font-size: .85rem; }
+        .action-card p  { font-size: .76rem; }
+
+        /* Stat num lebih kecil */
+        .stat-num { font-size: 1.5rem !important; }
+
+        /* Table horizontal scroll */
+        table { display: block; overflow-x: auto; white-space: nowrap; }
+
+        /* Filter bar wrap */
+        .filter-bar { flex-wrap: wrap; }
+
+        /* Search box full width */
+        .search-box, .search-box input { width: 100% !important; max-width: 100% !important; }
+
+        /* td actions wrap */
+        .td-actions, .actions { flex-wrap: wrap; }
+    }
+
+    @media (max-width: 480px) {
+        .stats-grid,
+        .stats-row {
+            grid-template-columns: 1fr !important;
+        }
+        .topbar-title { font-size: .9rem !important; }
+        .count-box { min-width: 100%; }
+    }
+
     </style>
 </head>
 <body>
