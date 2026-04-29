@@ -415,19 +415,25 @@ if (isset($_GET["edit"])) {
         }
 
         .table-responsive {
+            display: block; /* Sangat penting agar div mematuhi batas lebarnya */
             width: 100%;
-            overflow-x: auto; /* Memunculkan scroll bar horizontal jika tabel terlalu lebar */
-            -webkit-overflow-scrolling: touch; /* Membuat scroll mulus di layar sentuh */
+            max-width: 100%; /* Mencegah div ikut melebar melebihi layar */
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
             margin-bottom: 20px;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
+            /* Opsional: Tambahkan border agar batas scroll tabel terlihat jelas */
+            border: 1px solid #e0e0e0; 
         }
 
-        /* Pastikan tabel mengambil lebar penuh */
         .table-responsive table {
             width: 100%;
-            min-width: 600px; /* Jika layar lebih kecil dari 600px, tabel bisa di-scroll */
+            min-width: 700px; /* Paksa tabel memiliki lebar minimum agar tidak berdempetan, dan memicu scroll */
             border-collapse: collapse;
+        }
+
+        html, body {
+            max-width: 100vw;
+            overflow-x: hidden;
         }
 
         /* ── RESPONSIVE PADA LAYAR KECIL (HP & TABLET) ── */
