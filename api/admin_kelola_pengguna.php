@@ -1,9 +1,10 @@
 <?php
 session_start();
 require_once 'koneksi.php';
+require_once 'auth_helper.php';
 
 // Hanya superadmin dan admin_pengguna yang bisa akses
-if (!isset($_SESSION["admin_nama"])) {
+if (!cek_login_admin()) {
     header("Location: adminloginpage.php"); exit();
 }
 

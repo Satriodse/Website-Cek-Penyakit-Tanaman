@@ -1,9 +1,10 @@
 <?php
 session_start();
 require_once 'koneksi.php';
+require_once 'auth_helper.php';
 
 // Hanya super admin yang bisa akses
-if (!isset($_SESSION["admin_nama"]) || $_SESSION["admin_role"] !== 'superadmin') {
+if (!cek_login_admin() || $_SESSION["admin_role"] !== 'superadmin') {
     header("Location: admindashboard.php?error=Akses+ditolak.+Hanya+Super+Admin.");
     exit();
 }
