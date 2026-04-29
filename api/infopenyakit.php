@@ -1,6 +1,12 @@
 <?php
 session_start();
 require_once 'koneksi.php';
+require_once 'auth_helper.php';
+
+// Wajib login — redirect jika belum
+if (!cek_login_pengguna() && !cek_login_admin()) {
+    header("Location: loginpage.php"); exit();
+}
 
 // Ambil semua artikel dari database
 $artikelList = [];
@@ -11,8 +17,7 @@ if ($result) {
     }
 }
 
-$isLoggedIn = isset($_SESSION["nama"]);
-$isAdmin    = isset($_SESSION["admin_nama"]);
+$isAdmin = isset($_SESSION["admin_nama"]);
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -20,158 +25,175 @@ $isAdmin    = isset($_SESSION["admin_nama"]);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Info Penyakit Tanaman CePaT</title>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,700;1,400&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
+        /* ── RESET & ROOT ───────────────────────────────── */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         :root {
-            --green: #2e7d32;
-            --green-mid: #4caf50;
-            --green-light: #e8f5e9;
-            --dark: #1a2e1b;
-            --grey: #607d8b;
-            --border: #e8ece8;
-            --body-bg: #f5f7f5;
+            --fresh-green:    #4caf50;
+            --dark-green:     #2e7d32;
+            --light-green-bg: #f1f8e9;
+            --green-light:    #e8f5e9;
+            --pure-white:     #ffffff;
+            --text-dark:      #333333;
+            --text-grey:      #555555;
+            --border-color:   #e0e0e0;
+            --body-bg:        #f5f7f5;
         }
+        body { background: var(--body-bg); color: var(--text-dark); line-height: 1.6; }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: var(--body-bg);
-            color: var(--dark);
-        }
-
-        /* =========================================
-           HEADER & NAVBAR BARU (SESUAI DESAIN)
-           ========================================= */
-      header {
-    /* Membuat background putih transparan sebesar 70% */
-            background: rgba(255, 255, 255, 0.7); 
-    
-    /* Memberikan efek blur/buram pada background di bawahnya */
-            backdrop-filter: blur(10px); 
-            -webkit-backdrop-filter: blur(10px);
-    
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-            position: sticky;
+        /* ── HEADER / NAVBAR (sama persis dgn tugasweb.php) ── */
+        .main-header {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-bottom: 1px solid rgba(224, 224, 224, 0.5);
+            position: fixed;
+            width: 100%;
             top: 0;
-            z-index: 50;
+            left: 0;
+            z-index: 1000;
         }
-
-        nav {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 15px 24px;
+        .main-header nav {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            padding: 15px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
         }
-
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 10px;
+        .logo-area { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+        .logo-area img { height: 40px; width: 40px; object-fit: contain; }
+        .logo-text { font-size: 24px; font-weight: 700; color: var(--fresh-green); }
+        .nav-links { list-style: none; display: flex; gap: 25px; }
+        .nav-links li a {
             text-decoration: none;
-        }
-
-        .brand img {
-            height: 40px; /* Ukuran logo disesuaikan */
-        }
-
-       .brand-name {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #4caf50; 
-        }
-
-        /* Menu Navigasi di Tengah */
-        .nav-links {
-            display: flex;
-            gap: 30px;
-        }
-
-        .nav-link {
-            color: #333333;
-            text-decoration: none;
+            color: var(--text-grey);
+            font-weight: 500;
+            transition: color .3s;
             font-size: 14px;
+        }
+        .nav-links li a:hover,
+        .nav-links li a.active { color: var(--fresh-green); font-weight: 600; }
+        .auth-buttons { display: flex; gap: 10px; align-items: center; }
+        .greeting { font-weight: 600; color: #555; font-size: 14px; }
+        .logout-btn {
+            background: #e53935;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
             font-weight: 600;
-            text-transform: uppercase;
-            transition: color 0.3s;
+            font-size: 14px;
+            transition: background .3s;
         }
-
-        .nav-link:hover, .nav-link.active {
-            color: #2e7d32;
+        .logout-btn:hover { background: #c62828; }
+        .login-btn {
+            background: var(--fresh-green);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: background .3s;
         }
+        .login-btn:hover { background: var(--dark-green); }
 
-        /* Area Sapaan & Tombol Kanan */
-        .nav-actions {
+        /* ── HAMBURGER ───────────────────────────────────── */
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 4px;
+        }
+        .hamburger span {
+            display: block;
+            width: 24px;
+            height: 2px;
+            background: var(--text-dark);
+            border-radius: 2px;
+            transition: all .3s;
+        }
+        .hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+        .hamburger.open span:nth-child(2) { opacity: 0; }
+        .hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+        /* ── MOBILE DRAWER ───────────────────────────────── */
+        .mobile-menu {
+            display: none;
+            flex-direction: column;
+            background: rgba(255, 255, 255, 0.98);
+            border-top: 1px solid var(--border-color);
+            padding: 16px 20px 20px;
+        }
+        .mobile-menu.open { display: flex; }
+        .mobile-menu a {
+            text-decoration: none;
+            color: var(--text-grey);
+            font-weight: 500;
+            font-size: 15px;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+            transition: color .2s;
+        }
+        .mobile-menu a:hover,
+        .mobile-menu a.active { color: var(--fresh-green); }
+        .mobile-menu .mobile-auth { margin-top: 14px; display: flex; flex-direction: column; gap: 10px; }
+        .mobile-menu .mobile-auth .greeting { font-weight: 600; color: #555; font-size: 14px; }
+        .mobile-menu .mobile-auth .logout-btn,
+        .mobile-menu .mobile-auth .login-btn { text-align: center; }
+
+        /* ── ADMIN BAR ───────────────────────────────────── */
+        .admin-bar {
+            background: #1a2e1b;
+            padding: 10px 24px;
             display: flex;
             align-items: center;
-            gap: 15px;
+            justify-content: space-between;
+            margin-top: 72px;
+            flex-wrap: wrap;
+            gap: 8px;
         }
-
-       .greeting {
-            font-size: 0.9rem;
-            font-weight: 700;
-            color: #333333;
-        }
-        /* Tombol Logout Merah */
-        .btn-logout {
-            background-color: #e53935;
+        .admin-bar span { color: #a5d6a7; font-size: 0.82rem; }
+        .admin-bar a {
+            background: #4caf50;
             color: #fff;
-            padding: 8px 20px;
-            border-radius: 4px;
-            text-decoration: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 0.78rem;
             font-weight: 700;
-            font-size: 0.85rem;
-            transition: background 0.3s;
-        }
-
-        .btn-logout:hover {
-            background-color: #c62828;
-        }
-
-        /* Tombol Login Hijau */
-        .btn-login {
-            background-color: var(--green-mid);
-            color: #fff;
-            padding: 8px 20px;
-            border-radius: 4px;
             text-decoration: none;
-            font-weight: 700;
-            font-size: 0.85rem;
-            transition: background 0.3s;
+            transition: background .2s;
         }
+        .admin-bar a:hover { background: #2e7d32; }
 
-        .btn-login:hover {
-            background-color: var(--green);
-        }
-
-        /* =========================================
-           HERO & CONTENT (TETAP SAMA SEPERTI ASLI)
-           ========================================= */
+        /* ── HERO ────────────────────────────────────────── */
         .hero {
             background: linear-gradient(135deg, #1fa928 0%, #4caf50 60%, #388e3c 100%);
-            padding: 120px 24px 80px; /* padding atas diubah dari 70px ke 120px */
+            padding: 100px 24px 70px;
             text-align: center;
             position: relative;
             overflow: hidden;
+            margin-top: 72px;
         }
-
+        .hero.has-admin-bar { margin-top: 0; }
         .hero::before {
             content: '';
             position: absolute;
             top: -60px; right: -60px;
             width: 300px; height: 300px;
             border-radius: 50%;
-            background: rgba(255,255,255,0.05);
+            background: rgba(255, 255, 255, 0.05);
         }
-
         .hero-tag {
             display: inline-block;
-            background: rgba(255,255,255,0.12);
-            border: 1px solid rgba(255,255,255,0.2);
-            color: #333333;
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
             font-size: 0.75rem;
             font-weight: 700;
             letter-spacing: 2.5px;
@@ -180,30 +202,26 @@ $isAdmin    = isset($_SESSION["admin_nama"]);
             border-radius: 50px;
             margin-bottom: 18px;
         }
-
         .hero h1 {
-            font-family: 'Poppins', serif;
-            font-size: 2.8rem;
+            font-size: 2.6rem;
             color: #fff;
             line-height: 1.2;
             margin-bottom: 14px;
+            font-weight: 800;
         }
-
         .hero p {
-            color: rgba(255,255,255,0.7);
+            color: rgba(255, 255, 255, 0.85);
             font-size: 1rem;
             max-width: 520px;
             margin: 0 auto 28px;
             line-height: 1.7;
         }
-
         .search-wrap {
             display: flex;
             max-width: 480px;
             margin: 0 auto;
             position: relative;
         }
-
         .search-wrap input {
             width: 100%;
             padding: 14px 52px 14px 20px;
@@ -212,14 +230,13 @@ $isAdmin    = isset($_SESSION["admin_nama"]);
             font-size: 0.93rem;
             font-family: 'Poppins', sans-serif;
             outline: none;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
         }
-
         .search-btn {
             position: absolute;
             right: 8px; top: 50%;
             transform: translateY(-50%);
-            background: var(--green-mid);
+            background: var(--fresh-green);
             border: none;
             color: #fff;
             width: 36px; height: 36px;
@@ -229,12 +246,12 @@ $isAdmin    = isset($_SESSION["admin_nama"]);
             display: flex; align-items: center; justify-content: center;
         }
 
+        /* ── CONTENT ─────────────────────────────────────── */
         .content {
             max-width: 1100px;
             margin: 0 auto;
             padding: 40px 24px;
         }
-
         .filter-bar {
             display: flex;
             gap: 10px;
@@ -242,84 +259,61 @@ $isAdmin    = isset($_SESSION["admin_nama"]);
             flex-wrap: wrap;
             align-items: center;
         }
-
-        .filter-label {
-            font-size: 0.82rem;
-            font-weight: 600;
-            color: var(--grey);
-        }
-
+        .filter-label { font-size: 0.82rem; font-weight: 600; color: var(--text-grey); }
         .filter-btn {
             padding: 6px 16px;
             border-radius: 50px;
-            border: 1.5px solid var(--border);
+            border: 1.5px solid var(--border-color);
             background: #fff;
-            color: var(--grey);
-            font-size: 0.82rem;
-            font-weight: 500;
+            color: var(--text-grey);
+            font-size: 0.8rem;
+            font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all .2s;
             font-family: 'Poppins', sans-serif;
         }
-
-        .filter-btn.active,
-        .filter-btn:hover {
-            background: var(--green-light);
-            border-color: var(--green-mid);
-            color: var(--green);
+        .filter-btn:hover { border-color: var(--fresh-green); color: var(--fresh-green); }
+        .filter-btn.active {
+            background: var(--fresh-green);
+            border-color: var(--fresh-green);
+            color: #fff;
         }
+        .article-count { font-size: 0.8rem; color: var(--text-grey); margin-left: auto; }
 
-        .article-count {
-            margin-left: auto;
-            color: var(--grey);
-            font-size: 0.83rem;
-        }
-
+        /* ── GRID ARTIKEL ────────────────────────────────── */
         .articles-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-template-columns: repeat(3, 1fr);
             gap: 22px;
         }
-
         .article-card {
             background: #fff;
             border-radius: 14px;
-            border: 1px solid var(--border);
             overflow: hidden;
-            text-decoration: none;
-            color: inherit;
-            transition: transform 0.25s, box-shadow 0.25s;
             display: flex;
             flex-direction: column;
+            text-decoration: none;
+            transition: transform .2s, box-shadow .2s;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.07);
         }
-
         .article-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 30px rgba(0,0,0,0.09);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.11);
         }
-
         .card-top {
             height: 8px;
             background: linear-gradient(90deg, #4caf50, #81c784);
         }
-
         .card-body {
             padding: 22px;
             flex: 1;
             display: flex;
             flex-direction: column;
         }
-
-        .card-tags {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-            margin-bottom: 12px;
-        }
-
+        .card-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
         .tag {
             background: var(--green-light);
-            color: var(--green);
+            color: var(--dark-green);
             font-size: 0.68rem;
             font-weight: 700;
             letter-spacing: 0.5px;
@@ -327,135 +321,144 @@ $isAdmin    = isset($_SESSION["admin_nama"]);
             border-radius: 50px;
             text-transform: uppercase;
         }
-
         .card-title {
             font-size: 1rem;
             font-weight: 700;
-            color: var(--dark);
+            color: var(--text-dark);
             line-height: 1.4;
             margin-bottom: 10px;
             flex: 1;
         }
-
         .card-desc {
             font-size: 0.83rem;
-            color: var(--grey);
+            color: var(--text-grey);
             line-height: 1.6;
             margin-bottom: 16px;
         }
-
         .card-footer {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-top: 1px solid var(--border);
+            border-top: 1px solid var(--border-color);
             padding-top: 14px;
             margin-top: auto;
         }
-
         .card-source {
             font-size: 0.75rem;
-            color: var(--grey);
+            color: var(--text-grey);
             display: flex;
             align-items: center;
             gap: 5px;
         }
-
         .card-source-dot {
             width: 6px; height: 6px;
             border-radius: 50%;
-            background: var(--green-mid);
+            background: var(--fresh-green);
         }
-
-        .card-arrow {
-            color: var(--green-mid);
-            font-size: 1.1rem;
-            transition: transform 0.2s;
-        }
-
+        .card-arrow { color: var(--fresh-green); font-size: 1.1rem; transition: transform .2s; }
         .article-card:hover .card-arrow { transform: translateX(4px); }
 
-        .empty-state {
-            text-align: center;
-            padding: 70px 20px;
-            color: var(--grey);
-        }
-
+        /* ── EMPTY STATE ─────────────────────────────────── */
+        .empty-state { text-align: center; padding: 70px 20px; color: var(--text-grey); }
         .empty-state .icon { font-size: 3rem; margin-bottom: 14px; }
-        .empty-state h3 { font-size: 1.1rem; font-weight: 700; color: var(--dark); margin-bottom: 8px; }
+        .empty-state h3 { font-size: 1.1rem; font-weight: 700; color: var(--text-dark); margin-bottom: 8px; }
         .empty-state p { font-size: 0.88rem; }
 
-        .admin-bar {
-            background: #1a2e1b;
-            padding: 10px 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .admin-bar span {
-            color: #a5d6a7;
-            font-size: 0.82rem;
-        }
-
-        .admin-bar a {
-            background: #4caf50;
-            color: #fff;
-            padding: 6px 14px;
-            border-radius: 6px;
-            font-size: 0.78rem;
-            font-weight: 700;
-            text-decoration: none;
-            transition: background 0.2s;
-        }
-
-        .admin-bar a:hover { background: #2e7d32; }
-
+        /* ── FOOTER ──────────────────────────────────────── */
         footer {
             text-align: center;
             padding: 30px;
-            color: var(--grey);
+            color: var(--text-grey);
             font-size: 0.82rem;
-            border-top: 1px solid var(--border);
+            border-top: 1px solid var(--border-color);
             margin-top: 20px;
+        }
+
+        /* ── RESPONSIVE ──────────────────────────────────── */
+        @media (max-width: 1024px) {
+            .articles-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .auth-buttons { display: none; }
+            .hamburger { display: flex; }
+
+            .hero { margin-top: 68px; padding: 70px 16px 50px; }
+            .admin-bar { margin-top: 68px; }
+            .hero h1 { font-size: 1.9rem; }
+            .hero p { font-size: 0.9rem; }
+
+            .articles-grid { grid-template-columns: 1fr; }
+            .content { padding: 28px 16px; }
+            .filter-bar { gap: 8px; }
+            .article-count { margin-left: 0; width: 100%; }
+            .search-wrap { max-width: 100%; }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 { font-size: 1.6rem; }
+            .hero-tag { font-size: 0.65rem; }
         }
     </style>
 </head>
 <body>
 
+<!-- ── HEADER ──────────────────────────────────────────── -->
+<header class="main-header">
+    <nav>
+        <a href="tugasweb.php" class="logo-area">
+            <img src="../logocepat.png" alt="Logo CePaT">
+            <span class="logo-text">CePaT</span>
+        </a>
+
+        <ul class="nav-links">
+            <li><a href="tugasweb.php">BERANDA</a></li>
+            <li><a href="Analisispage.php">IDENTIFIKASI PENYAKIT</a></li>
+            <li><a href="infopenyakit.php" class="active">INFO PENYAKIT</a></li>
+            <li><a href="hasil_diagnosa.php">HASIL DIAGNOSA</a></li>
+        </ul>
+
+        <div class="auth-buttons">
+            <?php if ($isAdmin): ?>
+                <span style="font-weight:600;color:#555;align-self:center;">Halo, <?= htmlspecialchars($_SESSION["admin_nama"]) ?>!</span>
+            <?php else: ?>
+                <span style="font-weight:600;color:#555;align-self:center;">Halo, <?= htmlspecialchars($_SESSION["username"]) ?>!</span>
+            <?php endif; ?>
+            <a href="proseslogout.php" class="logout-btn">LOGOUT</a>
+        </div>
+
+        <button class="hamburger" id="hamburger" aria-label="Menu" onclick="toggleMenu()">
+            <span></span><span></span><span></span>
+        </button>
+    </nav>
+
+    <!-- Mobile drawer -->
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="tugasweb.php">BERANDA</a>
+        <a href="Analisispage.php">IDENTIFIKASI PENYAKIT</a>
+        <a href="infopenyakit.php" class="active">INFO PENYAKIT</a>
+        <a href="hasil_diagnosa.php">HASIL DIAGNOSA</a>
+        <div class="mobile-auth">
+            <?php if ($isAdmin): ?>
+                <span style="font-weight:600;color:#555;font-size:14px;">Halo, <?= htmlspecialchars($_SESSION["admin_nama"]) ?>!</span>
+            <?php else: ?>
+                <span style="font-weight:600;color:#555;font-size:14px;">Halo, <?= htmlspecialchars($_SESSION["username"]) ?>!</span>
+            <?php endif; ?>
+            <a href="proseslogout.php" class="logout-btn">LOGOUT</a>
+        </div>
+    </div>
+</header>
+
 <?php if ($isAdmin): ?>
 <div class="admin-bar">
-    <span> Anda sedang login sebagai Admin: <strong><?= htmlspecialchars($_SESSION["admin_nama"]) ?></strong></span>
-    <a href="admin_infopenyakit.php">✏️ Kelola Konten Ini</a>
+    <span>✏️ Anda login sebagai Admin: <strong><?= htmlspecialchars($_SESSION["admin_nama"]) ?></strong></span>
+    <a href="admin_infopenyakit.php">Kelola Konten Ini</a>
 </div>
 <?php endif; ?>
 
-<header>
-    <nav>
-        <a href="tugasweb.php" class="brand">
-            <img src="../logocepat.png" alt="Logo CePaT">
-            <span class="brand-name">CePaT</span>
-        </a>
-        
-        <div class="nav-links">
-            <a href="tugasweb.php" class="nav-link">BERANDA</a>
-            <a href="Analisispage.php" class="nav-link">IDENTIFIKASI PENYAKIT</a>
-            <a href="#" class="nav-link active">INFO PENYAKIT</a>
-            <a href="#" class="nav-link">HASIL IDENTIFIKASI</a>
-        </div>
-
-        <div class="nav-actions">
-            <?php if ($isLoggedIn): ?>
-                <span class="greeting">Halo, <?= htmlspecialchars($_SESSION["username"]) ?>!</span>
-                <a href="proseslogout.php" class="btn-logout">LOGOUT</a>
-            <?php else: ?>
-                <a href="loginpage.php" class="btn-login">LOGIN / DAFTAR</a>
-            <?php endif; ?>
-        </div>
-    </nav>
-</header>
-
-<section class="hero">
+<!-- ── HERO ────────────────────────────────────────────── -->
+<section class="hero <?= $isAdmin ? 'has-admin-bar' : '' ?>">
     <div class="hero-tag">Ensiklopedia Penyakit Tanaman</div>
     <h1>Info Penyakit<br>Tanaman Terlengkap</h1>
     <p>Kumpulan artikel dan sumber terpercaya tentang penyakit tanaman. Klik judul untuk membaca artikel lengkap.</p>
@@ -465,6 +468,7 @@ $isAdmin    = isset($_SESSION["admin_nama"]);
     </div>
 </section>
 
+<!-- ── KONTEN ARTIKEL ───────────────────────────────────── -->
 <div class="content">
     <div class="filter-bar">
         <span class="filter-label">Filter:</span>
@@ -478,7 +482,7 @@ $isAdmin    = isset($_SESSION["admin_nama"]);
 
     <?php if (empty($artikelList)): ?>
     <div class="empty-state">
-        <div class="icon"></div>
+        <div class="icon">📋</div>
         <h3>Belum ada artikel</h3>
         <p>Admin belum menambahkan artikel info penyakit. Silakan cek kembali nanti.</p>
     </div>
@@ -499,7 +503,7 @@ $isAdmin    = isset($_SESSION["admin_nama"]);
                     <?php endif; ?>
                 </div>
                 <div class="card-title"><?= htmlspecialchars($artikel['judul']) ?></div>
-                <div class="card-desc"><?= htmlspecialchars(substr($artikel['deskripsi'], 0, 100)) ?>...</div>
+                <div class="card-desc"><?= htmlspecialchars(substr($artikel['deskripsi'], 0, 110)) ?>...</div>
                 <div class="card-footer">
                     <div class="card-source">
                         <div class="card-source-dot"></div>
@@ -514,40 +518,50 @@ $isAdmin    = isset($_SESSION["admin_nama"]);
     <?php endif; ?>
 </div>
 
+<!-- ── FOOTER ───────────────────────────────────────────── -->
 <footer>
-    &copy; 2026 CePaT Portal Cek Penyakit Tanaman. Semua Hak Dilindungi.
+    &copy; 2026 CePaT — Portal Cek Penyakit Tanaman. Semua Hak Dilindungi.
 </footer>
 
 <script>
-let activeTag = 'semua';
+    /* ── Hamburger toggle ── */
+    function toggleMenu() {
+        const btn  = document.getElementById('hamburger');
+        const menu = document.getElementById('mobileMenu');
+        btn.classList.toggle('open');
+        menu.classList.toggle('open');
+    }
 
-function filterCards() {
-    const q = document.getElementById('searchInput').value.toLowerCase();
-    const cards = document.querySelectorAll('.article-card');
-    let visible = 0;
+    /* ── Filter & Search ── */
+    let activeTag = 'semua';
 
-    cards.forEach(card => {
-        const titleMatch = card.dataset.title.includes(q);
-        const descMatch  = card.dataset.deskripsi.includes(q);
-        const tagMatch   = activeTag === 'semua' || card.dataset.tag.includes(activeTag);
+    function filterCards() {
+        const q = document.getElementById('searchInput').value.toLowerCase();
+        const cards = document.querySelectorAll('.article-card');
+        let visible = 0;
 
-        if ((titleMatch || descMatch) && tagMatch) {
-            card.style.display = 'flex';
-            visible++;
-        } else {
-            card.style.display = 'none';
-        }
-    });
+        cards.forEach(card => {
+            const titleMatch = card.dataset.title.includes(q);
+            const descMatch  = card.dataset.deskripsi.includes(q);
+            const tagMatch   = activeTag === 'semua' || card.dataset.tag.includes(activeTag);
 
-    document.getElementById('count-label').textContent = visible + ' artikel tersedia';
-}
+            if ((titleMatch || descMatch) && tagMatch) {
+                card.style.display = 'flex';
+                visible++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
 
-function filterByTag(tag, btn) {
-    activeTag = tag;
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    filterCards();
-}
+        document.getElementById('count-label').textContent = visible + ' artikel tersedia';
+    }
+
+    function filterByTag(tag, btn) {
+        activeTag = tag;
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        filterCards();
+    }
 </script>
 </body>
 </html>
