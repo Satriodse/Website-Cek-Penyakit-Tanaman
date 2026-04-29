@@ -668,6 +668,55 @@ $roleBadge = $roleLabels[$role] ?? $role;
             padding:30px!important;
             font-size:.85rem
         }
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto; /* Memunculkan scroll bar horizontal jika tabel terlalu lebar */
+            -webkit-overflow-scrolling: touch; /* Membuat scroll mulus di layar sentuh */
+            margin-bottom: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+        }
+
+        /* Pastikan tabel mengambil lebar penuh */
+        .table-responsive table {
+            width: 100%;
+            min-width: 600px; /* Jika layar lebih kecil dari 600px, tabel bisa di-scroll */
+            border-collapse: collapse;
+        }
+
+        /* ── RESPONSIVE PADA LAYAR KECIL (HP & TABLET) ── */
+        @media screen and (max-width: 768px) {
+    
+        /* 1. Jika ada layout flexbox/grid yang berdampingan, ubah jadi bertumpuk */
+        .dashboard-container, .main-layout {
+            display: flex;
+            flex-direction: column; /* Mengubah kiri-kanan menjadi atas-bawah */
+        }
+
+        /* 2. Sesuaikan Sidebar */
+        .sidebar {
+            width: 100%;
+            height: auto;
+            position: relative; /* Jangan jadikan fixed di HP jika menghalangi konten */
+            padding: 15px;
+        }
+
+        /* 3. Sesuaikan Area Konten Utama */
+        .main-content {
+            margin-left: 0 !important; /* Hilangkan margin kiri yang biasanya disiapkan untuk sidebar */
+            width: 100%;
+            padding: 15px;
+        }
+
+        /* 4. Sesuaikan Kartu (Card) Info di Dashboard */
+        .card-container {
+            grid-template-columns: 1fr; /* Jika pakai grid, ubah jadi 1 kolom */
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        }
         
     </style>
 </head>
@@ -879,6 +928,7 @@ $roleBadge = $roleLabels[$role] ?? $role;
                 <h3>Admin Terdaftar (<?= $statAdmin ?>)</h3>
                 <a href="admin_kelola_admin.php">Kelola semua →</a>
             </div>
+            <div class="table-responsive">
             <table>
                 <thead>
                     <tr><th>Nama</th><th>Username</th><th>Role</th><th>Status</th></tr>
@@ -917,6 +967,7 @@ $roleBadge = $roleLabels[$role] ?? $role;
                 <h3>Pengguna Terdaftar (<?= $statPengguna ?>)</h3>
                 <a href="admin_kelola_pengguna.php">Kelola semua →</a>
             </div>
+            <div class="table-responsive">
             <table>
                 <thead>
                     <tr><th>Nama</th><th>Username</th><th>Email</th><th>Terdaftar</th></tr>
@@ -946,6 +997,7 @@ $roleBadge = $roleLabels[$role] ?? $role;
                 <h3>Info Penyakit (<?= $statArtikel ?>)</h3>
                 <a href="admin_infopenyakit.php">Kelola semua →</a>
             </div>
+            <div class="table-responsive">
             <table>
                 <thead>
                     <tr><th>Judul</th><th>Tanaman</th><th>Status</th></tr>
