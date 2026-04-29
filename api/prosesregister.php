@@ -54,16 +54,28 @@ if (mysqli_stmt_num_rows($cekUsername) > 0) {
 }
 mysqli_stmt_close($cekUsername);
 
-// Simpan ke database
+// ── SIMPAN KE DATABASE ────────────────────────────────────────
+
+// 1. Generate ID Unik (Kombinasi tahun, bulan, hari, jam, detik + 3 angka random)
+// Hasilnya berupa angka unik 15 digit (contoh: 240502153012789)
+$id_pengguna = date('ymdHis') . mt_rand(100, 999);
+
+// 2. Hash password sebelum disimpan ke database
 $passwordHash = password_hash($password, PASSWORD_DEFAULT);
+
+// 3. Masukkan data ke tabel (termasuk ID yang baru saja dibuat)
 $stmt = mysqli_prepare($conn,
     "INSERT INTO pengguna (id, nama, username, email, password, created_at) VALUES (?, ?, ?, ?, ?, NOW())");
-mysqli_stmt_bind_param($stmt, "ssss", $nama, $username, $email, $passwordHash);
 
+// 4. Bind 5 parameter ("sssss" untuk 5 data: id, nama, username, email, password)
+mysqli_stmt_bind_param($stmt, "sssss", $id_pengguna, $nama, $username, $email, $passwordHash);
+
+// 5. Eksekusi dan redirect
 if (mysqli_stmt_execute($stmt)) {
-    mysqli_stmt_close($stmt);
     redirect("loginpage.php?success=Registrasi+berhasil!+Silakan+login.");
 } else {
-    mysqli_stmt_close($stmt);
-    redirect("registerpage.php?error=Terjadi+kesalahan.+Coba+lagi.");
+    // Jika gagal, bisa jadi karena error database lain
+    redirect("registerpage.php?error=Terjadi+kesalahan+saat+menyimpan+data!");
 }
+
+mysqli_stmt_close($stmt);
