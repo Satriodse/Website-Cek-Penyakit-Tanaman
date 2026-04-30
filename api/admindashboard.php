@@ -50,13 +50,15 @@ $roleBadge = $roleLabels[$role] ?? $role;
         .sidebar{
             width:var(--sidebar-w);
             background:var(--sidebar-bg);
-            min-height:100vh;
+            height: 100vh; /* Ubah min-height menjadi height agar scroll berkerja maksimal */
+            height: 100dvh; /* Tambahkan ini agar lebih optimal di browser HP (seperti Chrome/Safari) */
             position:fixed;left:0;
             top:0;
             display:flex;
             flex-direction:column;
             z-index:200;
-            overflow:hidden
+            overflow-y: auto; /* Mengizinkan scroll ke atas/bawah */
+            overflow-x: hidden; /* Mencegah scroll ke samping */
         }
 
         .sidebar::before{
@@ -743,7 +745,9 @@ $roleBadge = $roleLabels[$role] ?? $role;
             z-index: 300;
             width: 260px !important;
             position: fixed !important;
-            height: 100vh !important;
+            height: 100dvh !important; /* Gunakan dvh agar tidak tertutup address bar HP */
+            overflow-y: auto !important; /* Pastikan bisa di-scroll */
+            padding-bottom: 20px; /* Beri sedikit ruang kosong di bawah tombol logout */
         }
         .sidebar.open { transform: translateX(0); }
 
