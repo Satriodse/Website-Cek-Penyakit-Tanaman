@@ -832,6 +832,13 @@ $roleBadge = $roleLabels[$role] ?? $role;
     </style>
 </head>
 <body>
+    <button class="hamburger" id="hamburgerBtn">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
 <aside class="sidebar">
     <div class="sidebar-brand">
@@ -1138,5 +1145,21 @@ $roleBadge = $roleLabels[$role] ?? $role;
 
     </div>
 </div>
+    <script>
+        const hamburgerBtn = document.getElementById('hamburgerBtn');
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+
+        function toggleSidebar() {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('show');
+        }
+
+        // Buka/tutup sidebar saat tombol hamburger diklik
+        hamburgerBtn.addEventListener('click', toggleSidebar);
+
+        // Tutup sidebar saat area gelap (overlay) diklik
+        overlay.addEventListener('click', toggleSidebar);
+    </script>
 </body>
 </html>
