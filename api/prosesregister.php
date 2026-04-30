@@ -1,4 +1,5 @@
 <?php
+/**@var mysqli $conn */
 session_start();
 require_once 'koneksi.php';
 

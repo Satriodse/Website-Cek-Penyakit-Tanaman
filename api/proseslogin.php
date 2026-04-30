@@ -1,4 +1,5 @@
 <?php
+/**@var mysqli $conn */
 // ── proseslogin.php ───────────────────────────────────────────
 // PERBAIKAN:
 // 1. Hapus ob_start() — tidak diperlukan dan mengganggu pengiriman cookie
